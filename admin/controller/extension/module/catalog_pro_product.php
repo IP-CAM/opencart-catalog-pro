@@ -103,6 +103,7 @@ class ControllerExtensionModuleCatalogProProduct extends Controller {
         $data['edit'] = str_replace("&amp;", "&", $this->url->link('extension/module/catalog_pro_product/edit', 'user_token=' . $this->session->data['user_token'], true));
         $data['save'] = str_replace("&amp;", "&", $this->url->link('extension/module/catalog_pro_product/save', 'user_token=' . $this->session->data['user_token'], true));
         $data['edit_data'] = str_replace("&amp;", "&", $this->url->link('extension/module/catalog_pro_product/editdata', 'user_token=' . $this->session->data['user_token'], true));
+        $data['save_data'] = str_replace("&amp;", "&", $this->url->link('extension/module/catalog_pro_product/savedata', 'user_token=' . $this->session->data['user_token'], true));
         $data['active'] = str_replace("&amp;", "&", $this->url->link('extension/module/catalog_pro_product/active', 'user_token=' . $this->session->data['user_token'], true));
 
         $data['noimage'] = $this->model_tool_image->resize('no_image.png', 60, 60);
@@ -957,33 +958,34 @@ class ControllerExtensionModuleCatalogProProduct extends Controller {
         foreach ($languages as $language) {
             $content .= '<div class="tab-pane '.($first++ === 0? "active": "").'" id="'.$language['code'].'"><form>';
             $content .= '<div class="form-group">
-                            <label for="main-name.'.$language['language_id'].'">'.$eModal['fields']['name'].'</label>
-                            <input type="text" class="form-control" name="name.'.$language['language_id'].'" id="main-name.'.$language['language_id'].'" placeholder="'.$eModal['fields']['name'].'" value="'.$names[$language['language_id']]['name'].'" />
+                            <label for="main-name-'.$language['language_id'].'">'.$eModal['fields']['name'].'</label>
+                            <input type="text" class="form-control" name="name.'.$language['language_id'].'" id="main-name-'.$language['language_id'].'" placeholder="'.$eModal['fields']['name'].'" value="'.$names[$language['language_id']]['name'].'" />
                           </div>';
 
             $content .= '<div class="form-group">
-                            <label for="main-description.'.$language['language_id'].'">'.$eModal['fields']['description'].'</label>
-                            <textarea class="form-control" name="description.'.$language['language_id'].'" id="main-description.'.$language['language_id'].'" placeholder="'.$eModal['fields']['description'].'" data-toggle="summernote" data-lang="'.$this->language->get("summernote").'">'.$names[$language['language_id']]['description'].'</textarea>
+                            <label for="main-description-'.$language['language_id'].'">'.$eModal['fields']['description'].'</label>
+                            <textarea class="form-control" name="description.'.$language['language_id'].'" id="main-description-'.$language['language_id'].'" placeholder="'.$eModal['fields']['description'].'" data-toggle="summernote" data-lang="'.$this->language->get("summernote").'">'.$names[$language['language_id']]['description'].'</textarea>
                           </div>';
 
             $content .= '<div class="form-group">
-                            <label for="main-meta-title.'.$language['language_id'].'">'.$eModal['fields']['meta_title'].'</label>
-                            <input type="text" class="form-control" name="meta_title.'.$language['language_id'].'" id="main-meta-title.'.$language['language_id'].'" placeholder="'.$eModal['fields']['meta_title'].'" value="'.$names[$language['language_id']]['meta_title'].'" />
+                            <label for="main-meta-title-'.$language['language_id'].'">'.$eModal['fields']['meta_title'].'</label>
+                            <input type="text" class="form-control" name="meta_title.'.$language['language_id'].'" id="main-meta-title-'.$language['language_id'].'" placeholder="'.$eModal['fields']['meta_title'].'" value="'.$names[$language['language_id']]['meta_title'].'" />
                           </div>';
 
             $content .= '<div class="form-group">
-                            <label for="main-meta-description.'.$language['language_id'].'">'.$eModal['fields']['meta_description'].'</label>
-                            <textarea rows="3" class="form-control" name="meta_description.'.$language['language_id'].'" id="main-meta-description.'.$language['language_id'].'" placeholder="'.$eModal['fields']['meta_description'].'">'.$names[$language['language_id']]['meta_description'].'</textarea>
+                            <label for="main-meta-description-'.$language['language_id'].'">'.$eModal['fields']['meta_description'].'</label>
+                            <textarea rows="3" class="form-control" name="meta_description.'.$language['language_id'].'" id="main-meta-description-'.$language['language_id'].'" placeholder="'.$eModal['fields']['meta_description'].'">'.$names[$language['language_id']]['meta_description'].'</textarea>
                           </div>';
 
             $content .= '<div class="form-group">
-                            <label for="main-meta-keywords.'.$language['language_id'].'">'.$eModal['fields']['meta_keywords'].'</label>
-                            <textarea rows="3" class="form-control" name="meta_keyword.'.$language['language_id'].'" id="main-meta-keywords.'.$language['language_id'].'" placeholder="'.$eModal['fields']['meta_keywords'].'">'.$names[$language['language_id']]['meta_keyword'].'</textarea>
+                            <label for="main-meta-keywords-'.$language['language_id'].'">'.$eModal['fields']['meta_keywords'].'</label>
+                            <textarea rows="3" class="form-control" name="meta_keyword.'.$language['language_id'].'" id="main-meta-keywords-'.$language['language_id'].'" placeholder="'.$eModal['fields']['meta_keywords'].'">'.$names[$language['language_id']]['meta_keyword'].'</textarea>
                           </div>';
 
             $content .= '<div class="form-group">
-                            <label for="main-tags.'.$language['language_id'].'">'.$eModal['fields']['tags'].'</label>
-                            <input type="text" class="form-control tags" name="tag.'.$language['language_id'].'" id="main-tags.'.$language['language_id'].'" placeholder="'.$eModal['fields']['tags'].'" value="'.$names[$language['language_id']]['tag'].'" />
+                            <label for="main-tags-'.$language['language_id'].'">'.$eModal['fields']['tags'].'</label>
+                            <input type="text" class="form-control tags" name="tag.'.$language['language_id'].'" id="main-tags-'.$language['language_id'].'" placeholder="'.$eModal['fields']['tags'].'" value="'.$names[$language['language_id']]['tag'].'" />
+                            <div class="alert alert-warning" style="margin-top: 3px">'.$eModal['notes']['tags'].'</div>
                           </div>';
 
             $content .= '</div>';
@@ -996,5 +998,123 @@ class ControllerExtensionModuleCatalogProProduct extends Controller {
         $content .= '<script>$(".tags").tagsinput(\'destroy\'); $(".tags").tagsinput();</script>';
 
         return $content;
+    }
+
+
+    public function saveData() {
+        $this->loadLanguage();
+        $this->load->model('extension/catalog_pro/product');
+        $this->load->model('localisation/language');
+
+        $eLang = $this->language->get('edit');
+        $eValidation = $this->language->get('validate');
+
+        $post = $this->request->post['data'];
+        $action = $this->request->post['action'];
+        $id = $this->request->post['id'];
+        $languages = $this->model_localisation_language->getLanguages(array());
+
+        if (!in_array($action, array('main'))) {
+            $this->returnError($eValidation['title'], $eValidation['action']);
+            return;
+        }
+
+        $item = $this->model_extension_catalog_pro_product->getProduct($id);
+        if ($item === array()) {
+            $this->returnError($eValidation['title'], $eValidation['id']);
+            return;
+        }
+
+        switch ($action) {
+            case 'main':
+                $languages = $this->model_localisation_language->getLanguages(array());
+
+                $errors = array();
+
+                $fields = array();
+                $regular = '/(\w+)\.(\d+)/m';
+                foreach ($post as $field => $value) {
+                    preg_match_all($regular, $field, $matches, PREG_SET_ORDER, 0);
+                    $fields[$matches[0][2]][$matches[0][1]] = $value;
+                }
+
+                $validator = Validation::createValidator();
+                $groups = new Assert\GroupSequence(['Default']);
+
+                foreach ($languages as $language) {
+                    $prefix = "[{$language['name']}] ";
+
+                    $constraint = new Assert\Collection([
+                        "name" => array(
+                            new Assert\Length([
+                                'min' => 2,
+                                'max' => 255,
+                                'minMessage' => $prefix.$eValidation['name.min'],
+                                'maxMessage' => $prefix.$eValidation['name.max'],
+                            ]),
+                            new Assert\NotBlank([
+                                'message' => $prefix.$eValidation['name.required']
+                            ]),
+                        ),
+                        "description" => array(
+                            new Assert\Type(['type' => 'string'])
+                        ),
+                        "meta_title" => array(
+                            new Assert\Length([
+                                'min' => 2,
+                                'max' => 255,
+                                'minMessage' => $prefix.$eValidation['meta_title.min'],
+                                'maxMessage' => $prefix.$eValidation['meta_title.max'],
+                            ]),
+                            new Assert\NotBlank([
+                                'message' => $prefix.$eValidation['meta_title.required']
+                            ]),
+                        ),
+                        "meta_description" => array(
+                            new Assert\Length([
+                                'max' => 255,
+                                'maxMessage' => $prefix.$eValidation['meta_description.max'],
+                            ]),
+                        ),
+                        "meta_keyword" => array(
+                            new Assert\Length([
+                                'max' => 255,
+                                'maxMessage' => $prefix.$eValidation['meta_keyword.max'],
+                            ]),
+                        ),
+                        "tag" => array(
+                            new Assert\Type(['type' => 'string'])
+                        ),
+                    ]);
+
+
+                    $violations = $validator->validate($fields[$language['language_id']], $constraint);
+
+                    if (0 !== count($violations)) {
+                        // there are errors, now you can show them
+                        foreach ($violations as $violation) {
+                            $errors[] = $violation->getMessage();
+                        }
+                    }
+                }
+
+                if ($errors !== array()) {
+                    $this->returnError($eValidation['title'], $errors);
+                    return;
+                }
+
+                foreach ($languages as $language) {
+                    $this->model_extension_catalog_pro_product->saveProductDescriptions($id, $language['language_id'], $fields[$language['language_id']]);
+                }
+
+                break;
+
+        }
+
+        $this->response->addHeader('Content-Type: application/json');
+        $this->response->setOutput(json_encode([
+            "title" => $this->language->get('text_success_save_title'),
+            "message" => $this->language->get('text_success_save')
+        ]));
     }
 }

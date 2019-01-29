@@ -464,13 +464,15 @@ $(document).ready(function () {
   });
 
   $('body').on( 'click', '.action-edit', function () {
-    $.post( editDataLink, { id: $(this).data("id"), action: $(this).data("action") })
+    let that = this;
+    $.post( editDataLink, { id: $(that).data("id"), action: $(that).data("action") })
       .done(function(data) {
         WebuiPopoversDestroy();
         $("#editDataTitle").html(data.title);
         $("#editDataContent").html(data.content);
         $("#editData").modal("show");
         $('[data-toggle="summernote"]').summernote({height: 250});
+        $("#editDataSave").attr("data-action", $(that).data('action')).attr("data-id", $(that).data('id'));
       })
       .fail(function(data) {
         if (data.status == 422)
@@ -478,6 +480,32 @@ $(document).ready(function () {
       });
   });
 
+  $("#editDataSave").on("click", function() {
+    let elements = {};
+    $("#editData").find("select, input, textarea").each(function(idx, element) {
+      if ($(element).attr("name") != undefined) {
+
+        if ($(element).is("input[type='text']") || $(element).is("input[type='hidden']") || $(element).is("textarea")) {
+          elements[$(element).attr("name")] = $(element).data("toggle") == "summernote" ? $(element).summernote("code") : $(element).val();
+        }
+        else if ($(element).is("select")) {
+          elements[$(element).attr("name")] = $(element).find("option:selected").val();
+        }
+      }
+    });
+
+    $.post( saveDataLink, { data: elements, id: $(this).attr("data-id"), action: $(this).attr("data-action") })
+      .done(function(data) {
+        $("#editData").modal("hide");
+        table.ajax.reload( null, false );
+        toastr.success(data.message, data.title, {timeOut: 5000});
+      })
+      .fail(function(data) {
+        if (data.status == 422)
+          toastr.error(data.responseJSON.message, data.responseJSON.title, {timeOut: 20000});
+      });
+
+  });
 
 });
 

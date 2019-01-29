@@ -56,6 +56,9 @@ $_['modal']        = array (
         'meta_keywords' => 'Мета-тег Keyword',
         'tags' => 'Теги товара',
     ),
+    'notes' => array (
+        'tags' => 'Чтобы добавить тег, введите его данные и нажмите Enter'
+    ),
 );
 
 // DataTable
@@ -159,4 +162,11 @@ $_['validate']              = array (
     'sort_order.min' => 'Значение поля "Порядок сортировки" должна быть больше {{ limit }}',
     'sort_order.required' => 'Поле "Порядок сортировки" обязательно к заполнению',
     'sort_order.invalid' => 'Поле "Порядок сортировки" должна быть числом',
+
+    'meta_title.min' => 'Мета-тег "Title" должен быть длиннее {{ limit }} символов',
+    'meta_title.max' => 'Мета-тег "Title" не должен быть длиннее {{ limit }} символов',
+    'meta_title.required' => 'Мета-тег "Title" обязателен к заполнению',
+
+    'meta_description.max' => 'Мета-тег "Description" не должен быть длиннее {{ limit }} символов',
+    'meta_keyword.max' => 'Мета-тег "Keyword" не должен быть длиннее {{ limit }} символов',
 );

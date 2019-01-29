@@ -45,7 +45,7 @@
                 <div class="modal-body" id="editDataContent"></div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">{{ eLang.buttons.cancel }}</button>
-                    <button type="button" class="btn btn-primary">{{ eLang.buttons.save }}</button>
+                    <button type="button" class="btn btn-primary" id="editDataSave">{{ eLang.buttons.save }}</button>
                 </div>
             </div>
         </div>
@@ -65,6 +65,7 @@
       var editLink = '{{ edit }}';
       var saveLink = '{{ save }}';
       var editDataLink = '{{ edit_data }}';
+      var saveDataLink = '{{ save_data }}';
       var activeLink = '{{ active }}';
       var popover;
       var noimage = '{{ noimage }}';
