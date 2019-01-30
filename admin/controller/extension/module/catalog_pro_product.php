@@ -953,57 +953,14 @@ class ControllerExtensionModuleCatalogProProduct extends Controller {
 
         $names = $this->model_extension_catalog_pro_product->getProductDescriptions($item['product_id']);
 
-        $first = 0;
-        $content = '<div class="row"><div class="col-xs-1"><ul class="nav nav-tabs tabs-left vertical-text">';
-        foreach ($languages as $language) {
-            $content .= '<li '.($first++ === 0? "class='active'": "").'><a href="#'.$language['code'].'" data-toggle="tab"><img src="language/'.$language['code'].'/'.$language['code'].'.png"/>&nbsp;&nbsp;&nbsp;'.$language['name'].'</a></li>';
-        }
-        $content .= '</ul></div><div class="col-xs-11"><div class="tab-content">';
-
-        $first = 0;
-        foreach ($languages as $language) {
-            $content .= '<div class="tab-pane '.($first++ === 0? "active": "").'" id="'.$language['code'].'"><form>';
-            $content .= '<div class="form-group">
-                            <label for="main-name-'.$language['language_id'].'">'.$eModal['fields']['name'].'</label>
-                            <input type="text" class="form-control" name="name.'.$language['language_id'].'" id="main-name-'.$language['language_id'].'" placeholder="'.$eModal['fields']['name'].'" value="'.$names[$language['language_id']]['name'].'" />
-                          </div>';
-
-            $content .= '<div class="form-group">
-                            <label for="main-description-'.$language['language_id'].'">'.$eModal['fields']['description'].'</label>
-                            <textarea class="form-control" name="description.'.$language['language_id'].'" id="main-description-'.$language['language_id'].'" placeholder="'.$eModal['fields']['description'].'" data-toggle="summernote" data-lang="'.$this->language->get("summernote").'">'.$names[$language['language_id']]['description'].'</textarea>
-                          </div>';
-
-            $content .= '<div class="form-group">
-                            <label for="main-meta-title-'.$language['language_id'].'">'.$eModal['fields']['meta_title'].'</label>
-                            <input type="text" class="form-control" name="meta_title.'.$language['language_id'].'" id="main-meta-title-'.$language['language_id'].'" placeholder="'.$eModal['fields']['meta_title'].'" value="'.$names[$language['language_id']]['meta_title'].'" />
-                          </div>';
-
-            $content .= '<div class="form-group">
-                            <label for="main-meta-description-'.$language['language_id'].'">'.$eModal['fields']['meta_description'].'</label>
-                            <textarea rows="3" class="form-control" name="meta_description.'.$language['language_id'].'" id="main-meta-description-'.$language['language_id'].'" placeholder="'.$eModal['fields']['meta_description'].'">'.$names[$language['language_id']]['meta_description'].'</textarea>
-                          </div>';
-
-            $content .= '<div class="form-group">
-                            <label for="main-meta-keywords-'.$language['language_id'].'">'.$eModal['fields']['meta_keywords'].'</label>
-                            <textarea rows="3" class="form-control" name="meta_keyword.'.$language['language_id'].'" id="main-meta-keywords-'.$language['language_id'].'" placeholder="'.$eModal['fields']['meta_keywords'].'">'.$names[$language['language_id']]['meta_keyword'].'</textarea>
-                          </div>';
-
-            $content .= '<div class="form-group">
-                            <label for="main-tags-'.$language['language_id'].'">'.$eModal['fields']['tags'].'</label>
-                            <input type="text" class="form-control tags" name="tag.'.$language['language_id'].'" id="main-tags-'.$language['language_id'].'" placeholder="'.$eModal['fields']['tags'].'" value="'.$names[$language['language_id']]['tag'].'" />
-                            <div class="alert alert-warning" style="margin-top: 3px">'.$eModal['notes']['tags'].'</div>
-                          </div>';
-
-            $content .= '</div>';
-
-            $content .= '</form>';
-        }
-
-        $content .= '</div></div>';
-
-        $content .= '<script>$(".tags").tagsinput(\'destroy\'); $(".tags").tagsinput();</script>';
-
-        return $content;
+        return $this->load->view(
+            'extension/module/catalog_pro/edit_product/block_general',
+            array(
+                "languages" => $languages,
+                "names" => $names,
+                "modal" => $eModal,
+            )
+        );
     }
 
     private function editDataData($eModal, $item) {
