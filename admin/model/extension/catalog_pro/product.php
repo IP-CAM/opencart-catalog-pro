@@ -41,7 +41,7 @@ class ModelExtensionCatalogProProduct extends Model {
     }
 
     public function getProduct($product_id) {
-        $sql = "SELECT * FROM " . DB_PREFIX . "product p LEFT JOIN " . DB_PREFIX . "product_description pd ON (p.product_id = pd.product_id) WHERE pd.language_id = '" . (int)$this->config->get('config_language_id') . "' and p.product_id = {$product_id}";
+        $sql = "SELECT * FROM " . DB_PREFIX . "product p LEFT JOIN " . DB_PREFIX . "product_description pd ON (p.product_id = pd.product_id) WHERE pd.language_id = '" . (int)$this->config->get('config_language_id') . "' and p.product_id = '".((int) $product_id)."'";
         $query = $this->db->query($sql);
 
         $row = $query->row;

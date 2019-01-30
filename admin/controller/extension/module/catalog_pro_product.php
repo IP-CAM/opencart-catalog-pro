@@ -935,6 +935,10 @@ class ControllerExtensionModuleCatalogProProduct extends Controller {
                 $title = $eModal['title']['data'];
                 $content = $this->editDataData($eModal, $item);
                 break;
+            case 'link':
+                $title = $eModal['title']['link'];
+                $content = $this->editDataLinks($eModal, $item);
+                break;
             default:
                 $eValidation = $this->language->get('validate');
                 return $this->returnError($eValidation['title'], $eValidation['action']);
@@ -996,6 +1000,28 @@ class ControllerExtensionModuleCatalogProProduct extends Controller {
         );
     }
 
+    private function editDataLinks($eModal, $item) {
+        $this->load->model('catalog/manufacturer');
+        $this->load->model('catalog/filter');
+        $this->load->model('extension/catalog_pro/category');
+
+        $manufacturers = $this->model_catalog_manufacturer->getManufacturers(array());
+        $categories = $this->model_extension_catalog_pro_category->getCategories();
+        $filters = array();
+        foreach ($this->model_catalog_filter->getFilters(array()) as $temp)
+            $filters[$temp['group']][] = $temp;
+
+        return $this->load->view(
+            'extension/module/catalog_pro/edit_product/block_links',
+            array(
+                "item" => $item,
+                "modal" => $eModal,
+                "manufacturers" => $manufacturers,
+                "categories" => $categories,
+                "filters" => $filters,
+            )
+        );
+    }
 
     public function saveData() {
         $this->loadLanguage();
