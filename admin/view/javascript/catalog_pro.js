@@ -473,6 +473,13 @@ $(document).ready(function () {
         $("#editData").modal("show");
         $('[data-toggle="summernote"]').summernote({height: 250});
         $("#editDataSave").attr("data-action", $(that).data('action')).attr("data-id", $(that).data('id'));
+
+        $('#editData').on('shown.bs.modal', function () {
+          $('.date').datetimepicker({
+            language: 'ru',
+            pickTime: false
+          });
+        });
       })
       .fail(function(data) {
         if (data.status == 422)
@@ -499,6 +506,7 @@ $(document).ready(function () {
         $("#editData").modal("hide");
         table.ajax.reload( null, false );
         toastr.success(data.message, data.title, {timeOut: 5000});
+
       })
       .fail(function(data) {
         if (data.status == 422)

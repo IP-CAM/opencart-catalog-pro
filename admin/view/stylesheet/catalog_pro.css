@@ -224,3 +224,18 @@ div.ruler div.cursor {height:20px; width:30px; background-color:#3C6E31; color:w
 .bootstrap-tagsinput {
     width: 100%;
 }
+
+
+.block-data .form-group {
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.required label:before {
+    content: '* ';
+    color: #f00;
+}
+
+.mt-5 {
+    margin-top: 5px;
+}
