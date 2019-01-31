@@ -52,4 +52,15 @@
         </div>
     </div>
 
+    <div class="col-xs-12">
+        <div class="form-group">
+            <label for="main-related">{{ modal.fields.related }}</label>
+            <select name="related" id="main-related" class="form-control select2-ajax" multiple="multiple" data-source="{{ ajaxProducts }}">
+                {% for r in related %}
+                    <option value="{{ r.id }}" selected>{{ r.text }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
 </div>

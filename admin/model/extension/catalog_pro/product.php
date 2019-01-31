@@ -30,7 +30,10 @@ class ModelExtensionCatalogProProduct extends Model {
         }
 
         if (!empty($data['filter_product_id'])) {
-            $sql .= " AND pd.product_id LIKE '%" . $this->db->escape($data['filter_product_id']) . "%'";
+            if (is_string($data['filter_product_id']))
+                $sql .= " AND pd.product_id LIKE '%" . $this->db->escape($data['filter_product_id']) . "%'";
+            else if (is_array($data['filter_product_id']))
+                $sql .= " AND pd.product_id IN (" . implode(", ", $data['filter_product_id']) . ")";
         }
 
         if (!empty($data['filter_category'])) {
@@ -62,9 +65,58 @@ class ModelExtensionCatalogProProduct extends Model {
             return $download['download_id'];
         }, $this->getProductDownloads(array($product_id)));
 
-
+        $row['related'] = array_map(function($related) {
+            return $related['related_id'];
+        }, $this->getProductRelated(array($product_id)));
 
         return $row;
+    }
+
+    public function getProductsByFilter($filter) {
+        $sql = "SELECT 
+		            p.*, pd.*
+		        FROM " . DB_PREFIX . "product p LEFT JOIN " . DB_PREFIX . "product_description pd ON (p.product_id = pd.product_id)
+                WHERE pd.language_id = '" . (int)$this->config->get('config_language_id') . "'";
+
+        $sql .= " AND (pd.name like '%".$this->db->escape($filter['q'])."%' or p.model like '%".$this->db->escape($filter['q'])."%' or p.sku like '%".$this->db->escape($filter['q'])."%')";
+
+        if (isset($filter['ignore']) && $filter['ignore'] !== array())
+            $sql .= " AND p.product_id not in (".implode(", ", $filter['ignore']).")";
+
+        $sql .= " GROUP BY p.product_id";
+
+        if (isset($data['sort']))
+            $sql .= " ORDER BY pd.name ASC";
+
+        if (isset($data['start']) || isset($data['limit'])) {
+            if ($filter['start'] < 0) {
+                $filter['start'] = 0;
+            }
+
+            if ($filter['limit'] < 1) {
+                $filter['limit'] = 20;
+            }
+
+            $sql .= " LIMIT " . (int)$filter['start'] . "," . (int)$filter['limit'];
+        }
+
+        $query = $this->db->query($sql);
+
+        $rows = array();
+        foreach ($query->rows as $row)
+            $rows[$row['product_id']] = $row;
+
+        $ids = array_keys($rows);
+
+        $specials = $this->getProductSpecials($ids);
+        foreach ($specials  as $row) {
+            if (!isset($rows[$row['product_id']]))
+                $rows[$row['product_id']]['specials'] = array();
+
+            $rows[$row['product_id']]['specials'][] = $row;
+        }
+
+        return $rows;
     }
 
 
@@ -221,6 +273,15 @@ class ModelExtensionCatalogProProduct extends Model {
         return $query->rows;
     }
 
+    public function getProductRelated($ids) {
+        if ($ids === array())
+            return array();
+
+        $query = $this->db->query("SELECT * FROM " . DB_PREFIX . "product_related where product_id in (".implode(", ", $ids).")");
+
+        return $query->rows;
+    }
+
     public function getProductDescriptions($product_id) {
         $product_description_data = array();
 
@@ -335,6 +396,18 @@ class ModelExtensionCatalogProProduct extends Model {
         if ($downloads !== array())
             foreach ($downloads as $download) {
                 $this->db->query("INSERT INTO " . DB_PREFIX . "product_to_download SET product_id = '" . (int)$product_id . "', download_id = '" . (int)$download . "';");
+            }
+
+        $this->db->query("UPDATE " . DB_PREFIX . "product SET date_modified = NOW() WHERE product_id = '" . (int)$product_id . "'");
+        return;
+    }
+
+    public function saveProductRelated($product_id, $related) {
+        $this->db->query("DELETE FROM " . DB_PREFIX . "product_related WHERE product_id = '" . (int)$product_id . "'");
+
+        if ($related !== array())
+            foreach ($related as $r) {
+                $this->db->query("INSERT INTO " . DB_PREFIX . "product_related SET product_id = '" . (int)$product_id . "', related_id = '" . (int)$r . "';");
             }
 
         $this->db->query("UPDATE " . DB_PREFIX . "product SET date_modified = NOW() WHERE product_id = '" . (int)$product_id . "'");

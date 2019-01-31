@@ -1007,6 +1007,22 @@ class ControllerExtensionModuleCatalogProProduct extends Controller {
         $this->load->model('catalog/download');
         $this->load->model('extension/catalog_pro/category');
 
+        $related = array();
+        if (isset($item['related']) && $item['related'] !== array()) {
+            $filter_data = array(
+                'start'           => 0,
+                'limit'           => 1000,
+                'filter_product_id' => $item['related'],
+            );
+            $temp = $this->model_extension_catalog_pro_product->getProducts($filter_data);
+            foreach ($temp as $p) {
+                $related[] = array(
+                    "id" => $p['product_id'],
+                    "text" => $this->getProductNameForAjax($p, $eModal),
+                );
+            }
+        }
+
         $manufacturers = $this->model_catalog_manufacturer->getManufacturers(array());
         $categories = $this->model_extension_catalog_pro_category->getCategories();
         $filters = array();
@@ -1035,6 +1051,8 @@ class ControllerExtensionModuleCatalogProProduct extends Controller {
                 'name'        => $download['name']
             );
 
+        $ajaxProducts = str_replace("&amp;", "&", $this->url->link('extension/module/catalog_pro_product/ajaxProducts', 'user_token=' . $this->session->data['user_token'], true));
+
         return $this->load->view(
             'extension/module/catalog_pro/edit_product/block_links',
             array(
@@ -1045,6 +1063,8 @@ class ControllerExtensionModuleCatalogProProduct extends Controller {
                 "filters" => $filters,
                 "stores" => $stores,
                 "downloads" => $downloads,
+                "ajaxProducts" => $ajaxProducts,
+                "related" => $related,
             )
         );
     }
@@ -1451,6 +1471,15 @@ class ControllerExtensionModuleCatalogProProduct extends Controller {
                             )
                         )
                     ),
+                    "related" => array(
+                        new Assert\Optional(
+                            array(
+                                new Assert\Type([
+                                    'type' => 'array'
+                                ]),
+                            )
+                        )
+                    ),
                 ]);
 
 
@@ -1473,6 +1502,7 @@ class ControllerExtensionModuleCatalogProProduct extends Controller {
                 $this->model_extension_catalog_pro_product->saveProductFilter($id, isset($post['filters'])? $post['filters']: array());
                 $this->model_extension_catalog_pro_product->saveProductStore($id, isset($post['stores'])? $post['stores']: array());
                 $this->model_extension_catalog_pro_product->saveProductDownload($id, isset($post['downloads'])? $post['downloads']: array());
+                $this->model_extension_catalog_pro_product->saveProductRelated($id, isset($post['related'])? $post['related']: array());
 
                 break;
 
@@ -1483,5 +1513,53 @@ class ControllerExtensionModuleCatalogProProduct extends Controller {
             "title" => $this->language->get('text_success_save_title'),
             "message" => $this->language->get('text_success_save')
         ]));
+    }
+
+    public function ajaxProducts() {
+        $this->loadLanguage();
+
+        $this->load->model('extension/catalog_pro/product');
+        $this->load->model('localisation/currency');
+
+        $eModal = $this->language->get('modal');
+
+        $query = $this->request->get['q']['term'];
+        $filter_data = array(
+            'start'             => 0,
+            'limit'             => 10,
+            'q'                 => $query,
+            'ignore'            => isset($this->request->get['ignore'])? $this->request->get['ignore']: array()
+        );
+
+        $products = array();
+        $temp = $this->model_extension_catalog_pro_product->getProductsByFilter($filter_data);
+
+        foreach ($temp as $p) {
+            $products[] = [
+                "id" => $p['product_id'],
+                "text" => $this->getProductNameForAjax($p, $eModal),
+            ];
+        }
+
+        $this->response->addHeader('Content-Type: application/json');
+        $this->response->setOutput(json_encode(
+            array(
+                "results" => $products,
+                "pagination" => array (
+                    "more" => false,
+                )
+            )
+        ));
+    }
+
+    private function getProductNameForAjax($p, $eModal) {
+        $additional = array();
+
+        if ($p['model'] != "")
+            $additional[] = $eModal['fields']['model'].": ".$p['model'];
+        if ($p['sku'] != "")
+            $additional[] = $eModal['fields']['sku'].": ".$p['sku'];
+
+        return $p['name'].($additional !== array()? ". <span style='color: #ccc'>".implode(", ", $additional)."</span>": "");
     }
 }

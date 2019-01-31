@@ -465,12 +465,21 @@ $(document).ready(function () {
 
   $('body').on( 'click', '.action-edit', function () {
     let that = this;
+
     $.post( editDataLink, { id: $(that).data("id"), action: $(that).data("action") })
       .done(function(data) {
         WebuiPopoversDestroy();
         $("#editDataTitle").html(data.title);
         $("#editDataContent").html(data.content);
         $("#editData").modal("show");
+        $("#editData").on('hide.bs.modal', function (e) {
+          var $select = $('.select2').select2();
+          $select.each(function(i,item){
+            $(item).select2("destroy");
+          });
+          $('.select2').remove();
+        });
+
         $('[data-toggle="summernote"]').summernote({height: 250});
         $("#editDataSave").attr("data-action", $(that).data('action')).attr("data-id", $(that).data('id'));
 
@@ -479,7 +488,28 @@ $(document).ready(function () {
             language: 'ru',
             pickTime: false
           });
-          $(".select2").select2();
+          // $(".select2").select2();
+          $("select.select2").select2();
+          $("select.select2-ajax").each(function(idx, element) {
+            $(element).select2({
+              escapeMarkup: function(markup) {
+                return markup;
+              },
+              ajax: {
+                url: $(element).data("source"),
+                dataType: 'json',
+                data: function (term, page) {
+                  return {
+                    q: term,
+                    ignore: $(element).select2('data').map(function (selected) {
+                      return selected.id;
+                    }),
+                  }
+                }
+              }
+            });
+          });
+
         });
       })
       .fail(function(data) {
