@@ -1003,6 +1003,8 @@ class ControllerExtensionModuleCatalogProProduct extends Controller {
     private function editDataLinks($eModal, $item) {
         $this->load->model('catalog/manufacturer');
         $this->load->model('catalog/filter');
+        $this->load->model('setting/store');
+        $this->load->model('catalog/download');
         $this->load->model('extension/catalog_pro/category');
 
         $manufacturers = $this->model_catalog_manufacturer->getManufacturers(array());
@@ -1010,6 +1012,28 @@ class ControllerExtensionModuleCatalogProProduct extends Controller {
         $filters = array();
         foreach ($this->model_catalog_filter->getFilters(array()) as $temp)
             $filters[$temp['group']][] = $temp;
+
+        $stores = array(
+            array(
+                'store_id' => 0,
+                'name'     => $this->language->get('text_default')
+            )
+        );
+
+        foreach ($this->model_setting_store->getStores() as $store) {
+            $stores[] = array(
+                'store_id' => $store['store_id'],
+                'name'     => $store['name']
+            );
+        }
+
+        $downloads = array();
+
+        foreach ($this->model_catalog_download->getDownloads(array()) as $download)
+            $downloads[] = array(
+                'download_id' => $download['download_id'],
+                'name'        => $download['name']
+            );
 
         return $this->load->view(
             'extension/module/catalog_pro/edit_product/block_links',
@@ -1019,6 +1043,8 @@ class ControllerExtensionModuleCatalogProProduct extends Controller {
                 "manufacturers" => $manufacturers,
                 "categories" => $categories,
                 "filters" => $filters,
+                "stores" => $stores,
+                "downloads" => $downloads,
             )
         );
     }

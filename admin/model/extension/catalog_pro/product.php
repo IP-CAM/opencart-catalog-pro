@@ -50,6 +50,20 @@ class ModelExtensionCatalogProProduct extends Model {
         $categories = $this->getProductCategories(array($product_id));
         $row['categories'] = explode(",", ($categories === array()? "": $categories[0]['categories']));
 
+        $row['filters'] = array_map(function($filter) {
+            return $filter['filter_id'];
+        }, $this->getProductFilters(array($product_id)));
+
+        $row['stores'] = array_map(function($store) {
+            return $store['store_id'];
+        }, $this->getProductStores(array($product_id)));
+
+        $row['downloads'] = array_map(function($download) {
+            return $download['download_id'];
+        }, $this->getProductDownloads(array($product_id)));
+
+
+
         return $row;
     }
 
@@ -113,6 +127,30 @@ class ModelExtensionCatalogProProduct extends Model {
             $rows[$row['product_id']]['categories'] = explode(",", $row['categories']);
         }
 
+        $filters = $this->getProductFilters($ids);
+        foreach ($filters  as $row) {
+            if (!isset($rows[$row['product_id']]))
+                $rows[$row['product_id']]['filters'] = array();
+
+            $rows[$row['product_id']]['filters'][] = $row['filter_id'];
+        }
+
+        $stores = $this->getProductStores($ids);
+        foreach ($stores  as $row) {
+            if (!isset($rows[$row['product_id']]))
+                $rows[$row['product_id']]['filters'] = array();
+
+            $rows[$row['product_id']]['stores'][] = $row['store_id'];
+        }
+
+        $downloads = $this->getProductDownloads($ids);
+        foreach ($downloads  as $row) {
+            if (!isset($rows[$row['product_id']]))
+                $rows[$row['product_id']]['downloads'] = array();
+
+            $rows[$row['product_id']]['downloads'][] = $row['download_id'];
+        }
+
 		return $rows;
 	}
 
@@ -152,6 +190,33 @@ class ModelExtensionCatalogProProduct extends Model {
             return array();
 
         $query = $this->db->query("SELECT pc.product_id, group_concat(DISTINCT pc.category_id SEPARATOR ',') as categories FROM " . DB_PREFIX . "product_to_category pc, " . DB_PREFIX . "category c WHERE pc.product_id in (".implode(",", $ids).") and pc.category_id = c.category_id group by pc.product_id ORDER BY c.sort_order asc");
+
+        return $query->rows;
+    }
+
+    public function getProductFilters($ids) {
+        if ($ids === array())
+            return array();
+
+        $query = $this->db->query("SELECT * FROM " . DB_PREFIX . "product_filter where product_id in (".implode(", ", $ids).")");
+
+        return $query->rows;
+    }
+
+    public function getProductStores($ids) {
+        if ($ids === array())
+            return array();
+
+        $query = $this->db->query("SELECT * FROM " . DB_PREFIX . "product_to_store where product_id in (".implode(", ", $ids).")");
+
+        return $query->rows;
+    }
+
+    public function getProductDownloads($ids) {
+        if ($ids === array())
+            return array();
+
+        $query = $this->db->query("SELECT * FROM " . DB_PREFIX . "product_to_download where product_id in (".implode(", ", $ids).")");
 
         return $query->rows;
     }

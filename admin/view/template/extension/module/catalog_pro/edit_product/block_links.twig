@@ -22,11 +22,31 @@
             <label for="main-filter">{{ modal.fields.filter }}</label>
             <select name="filter[]" id="main-filter" class="form-control select2" multiple="multiple">
                 {% for group,rows in filters %}
-                    <optgroup label="{{ group }}">
-                        {% for filter in rows %}
-                            <option value="{{ filter.filter_id }}" {% if filter.filter_id == 0 %} selected {% endif %}>{{ filter.name }}</option>
-                        {% endfor %}
-                    </optgroup>
+                    {% for filter in rows %}
+                        <option value="{{ filter.filter_id }}" {% if filter.filter_id in item.filters %} selected {% endif %}>{{ filter.name }} ({{ group }})</option>
+                    {% endfor %}
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+    <div class="col-xs-12">
+        <div class="form-group">
+            <label for="main-stores">{{ modal.fields.stores }}</label>
+            <select name="stores[]" id="main-stores" class="form-control select2" multiple="multiple">
+                {% for store in stores %}
+                    <option value="{{ store.store_id }}" {% if store.store_id in item.stores %} selected {% endif %}>{{ store.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+    <div class="col-xs-12">
+        <div class="form-group">
+            <label for="main-downloads">{{ modal.fields.downloads }}</label>
+            <select name="downloads[]" id="main-downloads" class="form-control select2" multiple="multiple">
+                {% for download in downloads %}
+                    <option value="{{ download.download_id }}" {% if download.download_id in item.downloads %} selected {% endif %}>{{ download.name }}</option>
                 {% endfor %}
             </select>
         </div>
