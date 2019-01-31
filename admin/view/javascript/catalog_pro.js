@@ -497,10 +497,18 @@ $(document).ready(function () {
           elements[$(element).attr("name")] = $(element).data("toggle") == "summernote" ? $(element).summernote("code") : $(element).val();
         }
         else if ($(element).is("select")) {
-          elements[$(element).attr("name")] = $(element).find("option:selected").val();
+          if ($(element).attr("multiple") === undefined)
+            elements[$(element).attr("name")] = $(element).find("option:selected").val();
+          else
+            elements[$(element).attr("name")] = $.map($(element).find("option:selected"), function(select) { return $(select).val(); });
         }
       }
     });
+
+    // hack for categories edit
+    if ($('#editDataSave').attr("data-action") == "link") {
+      elements['category'] = $.map(categoryEditTree.getCheckedNodes(), function(checked) { return checked.id; });
+    }
 
     $.post( saveDataLink, { data: elements, id: $(this).attr("data-id"), action: $(this).attr("data-action") })
       .done(function(data) {

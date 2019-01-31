@@ -1062,7 +1062,7 @@ class ControllerExtensionModuleCatalogProProduct extends Controller {
         $id = $this->request->post['id'];
         $languages = $this->model_localisation_language->getLanguages(array());
 
-        if (!in_array($action, array('main', 'data'))) {
+        if (!in_array($action, array('main', 'data', 'link'))) {
             $this->returnError($eValidation['title'], $eValidation['action']);
             return;
         }
@@ -1363,6 +1363,116 @@ class ControllerExtensionModuleCatalogProProduct extends Controller {
                 }
 
                 $this->model_extension_catalog_pro_product->saveProduct($id, $post);
+
+                break;
+
+
+            case 'link':
+                $this->load->model('catalog/manufacturer');
+                $this->load->model('catalog/filter');
+                $this->load->model('setting/store');
+                $this->load->model('catalog/download');
+                $this->load->model('extension/catalog_pro/category');
+
+                $errors = array();
+                $dict = array ();
+
+                $dict['manufacturers'] = array_map(function($manufacturer) {
+                    return $manufacturer['manufacturer_id'];
+                }, $this->model_catalog_manufacturer->getManufacturers(array()));
+
+                $dict['categories'] = array_map(function($category) {
+                    return $category['category_id'];
+                }, $this->model_extension_catalog_pro_category->getCategories());
+
+                $dict['filters'] = array_map(function($filter) {
+                    return $filter['filter_id'];
+                }, $this->model_catalog_filter->getFilters(array()));
+
+                $dict['stores'] = array(0);
+                $dict['stores'] = array_merge($dict['stores'], array_map(function($store) {
+                    return $store['store_id'];
+                }, $this->model_setting_store->getStores()));
+
+                $dict['downloads'] = array_map(function($download) {
+                    return $download['download_id'];
+                }, $this->model_catalog_download->getDownloads(array()));
+
+                $validator = Validation::createValidator();
+
+                $constraint = new Assert\Collection([
+                    "manufacturer_id" => array (
+                        new Assert\Choice([
+                            'choices' => $dict['manufacturers'],
+                            'message' => $eValidation['manufacturer.in']
+                        ]),
+                    ),
+                    "filters" => array(
+                        new Assert\Optional(
+                            array(
+                                new Assert\Choice([
+                                    'multiple' => true,
+                                    'choices' => $dict['filters'],
+                                    'message' => $eValidation['filters.in']
+                                ]),
+                            )
+                        )
+                    ),
+                    "stores" => array(
+                        new Assert\Optional(
+                            array(
+                                new Assert\Choice([
+                                    'multiple' => true,
+                                    'choices' => $dict['stores'],
+                                    'message' => $eValidation['stores.in']
+                                ]),
+                            )
+                        )
+                    ),
+                    "downloads" => array(
+                        new Assert\Optional(
+                            array(
+                                new Assert\Choice([
+                                    'multiple' => true,
+                                    'choices' => $dict['downloads'],
+                                    'message' => $eValidation['downloads.in'],
+                                ]),
+                            )
+                        )
+                    ),
+                    "category" => array(
+                        new Assert\Optional(
+                            array(
+                                new Assert\Choice([
+                                    'multiple' => true,
+                                    'choices' => $dict['categories'],
+                                    'message' => $eValidation['category.in'],
+                                ]),
+                            )
+                        )
+                    ),
+                ]);
+
+
+                $violations = $validator->validate($post, $constraint);
+
+                if (0 !== count($violations)) {
+                    foreach ($violations as $violation) {
+                        $errors[] = $violation->getMessage();
+                    }
+                }
+
+
+                if ($errors !== array()) {
+                    $this->returnError($eValidation['title'], $errors);
+                    return;
+                }
+
+                $this->model_extension_catalog_pro_product->saveProduct($id, array("manufacturer_id" => $post['manufacturer_id']));
+                $this->model_extension_catalog_pro_product->saveProductCategory($id, isset($post['category'])? $post['category']: array());
+                $this->model_extension_catalog_pro_product->saveProductFilter($id, isset($post['filters'])? $post['filters']: array());
+                $this->model_extension_catalog_pro_product->saveProductStore($id, isset($post['stores'])? $post['stores']: array());
+                $this->model_extension_catalog_pro_product->saveProductDownload($id, isset($post['downloads'])? $post['downloads']: array());
 
                 break;
 

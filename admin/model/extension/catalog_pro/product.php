@@ -283,10 +283,11 @@ class ModelExtensionCatalogProProduct extends Model {
         $this->db->query("DELETE FROM " . DB_PREFIX . "product_image WHERE product_id = '" . (int)$product_id . "'");
 
         $sort_order = 0;
-        foreach ($images as $image) {
-            $this->db->query("INSERT INTO " . DB_PREFIX . "product_image SET product_id = '" . (int)$product_id . "', image = '" . $this->db->escape($image['image']) . "', sort_order={$sort_order};");
-            $sort_order++;
-        }
+        if ($images !== array())
+            foreach ($images as $image) {
+                $this->db->query("INSERT INTO " . DB_PREFIX . "product_image SET product_id = '" . (int)$product_id . "', image = '" . $this->db->escape($image['image']) . "', sort_order={$sort_order};");
+                $sort_order++;
+            }
 
         $this->db->query("UPDATE " . DB_PREFIX . "product SET `image` = ".($mainImage == ""? null: "'".$this->db->escape($mainImage)."'").", date_modified = NOW() WHERE product_id = '" . (int)$product_id . "'");
         return;
@@ -295,9 +296,46 @@ class ModelExtensionCatalogProProduct extends Model {
     public function saveProductCategory($product_id, $categories) {
         $this->db->query("DELETE FROM " . DB_PREFIX . "product_to_category WHERE product_id = '" . (int)$product_id . "'");
 
-        foreach ($categories as $category) {
-            $this->db->query("INSERT INTO " . DB_PREFIX . "product_to_category SET product_id = '" . (int)$product_id . "', category_id = '" . (int)$category . "';");
-        }
+        if ($categories !== array())
+            foreach ($categories as $category) {
+                $this->db->query("INSERT INTO " . DB_PREFIX . "product_to_category SET product_id = '" . (int)$product_id . "', category_id = '" . (int)$category . "';");
+            }
+
+        $this->db->query("UPDATE " . DB_PREFIX . "product SET date_modified = NOW() WHERE product_id = '" . (int)$product_id . "'");
+        return;
+    }
+
+    public function saveProductFilter($product_id, $filters) {
+        $this->db->query("DELETE FROM " . DB_PREFIX . "product_filter WHERE product_id = '" . (int)$product_id . "'");
+
+        if ($filters !== array())
+            foreach ($filters as $filter) {
+                $this->db->query("INSERT INTO " . DB_PREFIX . "product_filter SET product_id = '" . (int)$product_id . "', filter_id = '" . (int)$filter . "';");
+            }
+
+        $this->db->query("UPDATE " . DB_PREFIX . "product SET date_modified = NOW() WHERE product_id = '" . (int)$product_id . "'");
+        return;
+    }
+
+    public function saveProductStore($product_id, $stores) {
+        $this->db->query("DELETE FROM " . DB_PREFIX . "product_to_store WHERE product_id = '" . (int)$product_id . "'");
+
+        if ($stores !== array())
+            foreach ($stores as $store) {
+                $this->db->query("INSERT INTO " . DB_PREFIX . "product_to_store SET product_id = '" . (int)$product_id . "', store_id = '" . (int)$store . "';");
+            }
+
+        $this->db->query("UPDATE " . DB_PREFIX . "product SET date_modified = NOW() WHERE product_id = '" . (int)$product_id . "'");
+        return;
+    }
+
+    public function saveProductDownload($product_id, $downloads) {
+        $this->db->query("DELETE FROM " . DB_PREFIX . "product_to_download WHERE product_id = '" . (int)$product_id . "'");
+
+        if ($downloads !== array())
+            foreach ($downloads as $download) {
+                $this->db->query("INSERT INTO " . DB_PREFIX . "product_to_download SET product_id = '" . (int)$product_id . "', download_id = '" . (int)$download . "';");
+            }
 
         $this->db->query("UPDATE " . DB_PREFIX . "product SET date_modified = NOW() WHERE product_id = '" . (int)$product_id . "'");
         return;
