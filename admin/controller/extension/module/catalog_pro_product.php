@@ -359,9 +359,7 @@ class ControllerExtensionModuleCatalogProProduct extends Controller {
                 $validator = Validation::createValidator();
                 $violations = $validator->validate($post['sku'], array(
                     new Length([
-                        'min' => 1,
-                        'max' => 255,
-                        'minMessage' => $eValidation['sku.min'],
+                        'max' => 64,
                         'maxMessage' => $eValidation['sku.max'],
                     ])
                 ));
@@ -933,6 +931,18 @@ class ControllerExtensionModuleCatalogProProduct extends Controller {
                 $title = $eModal['title']['main'];
                 $content = $this->editDataMain($eModal, $item);
                 break;
+            case 'data':
+                $title = $eModal['title']['data'];
+                $content = $this->editDataData($eModal, $item);
+                break;
+            case 'link':
+                $title = $eModal['title']['link'];
+                $content = $this->editDataLinks($eModal, $item);
+                break;
+            default:
+                $eValidation = $this->language->get('validate');
+                return $this->returnError($eValidation['title'], $eValidation['action']);
+                return;
         }
 
         $this->response->addHeader('Content-Type: application/json');
@@ -947,59 +957,117 @@ class ControllerExtensionModuleCatalogProProduct extends Controller {
 
         $names = $this->model_extension_catalog_pro_product->getProductDescriptions($item['product_id']);
 
-        $first = 0;
-        $content = '<div class="row"><div class="col-xs-1"><ul class="nav nav-tabs tabs-left vertical-text">';
-        foreach ($languages as $language) {
-            $content .= '<li '.($first++ === 0? "class='active'": "").'><a href="#'.$language['code'].'" data-toggle="tab"><img src="language/'.$language['code'].'/'.$language['code'].'.png"/>&nbsp;&nbsp;&nbsp;'.$language['name'].'</a></li>';
-        }
-        $content .= '</ul></div><div class="col-xs-11"><div class="tab-content">';
-
-        $first = 0;
-        foreach ($languages as $language) {
-            $content .= '<div class="tab-pane '.($first++ === 0? "active": "").'" id="'.$language['code'].'"><form>';
-            $content .= '<div class="form-group">
-                            <label for="main-name-'.$language['language_id'].'">'.$eModal['fields']['name'].'</label>
-                            <input type="text" class="form-control" name="name.'.$language['language_id'].'" id="main-name-'.$language['language_id'].'" placeholder="'.$eModal['fields']['name'].'" value="'.$names[$language['language_id']]['name'].'" />
-                          </div>';
-
-            $content .= '<div class="form-group">
-                            <label for="main-description-'.$language['language_id'].'">'.$eModal['fields']['description'].'</label>
-                            <textarea class="form-control" name="description.'.$language['language_id'].'" id="main-description-'.$language['language_id'].'" placeholder="'.$eModal['fields']['description'].'" data-toggle="summernote" data-lang="'.$this->language->get("summernote").'">'.$names[$language['language_id']]['description'].'</textarea>
-                          </div>';
-
-            $content .= '<div class="form-group">
-                            <label for="main-meta-title-'.$language['language_id'].'">'.$eModal['fields']['meta_title'].'</label>
-                            <input type="text" class="form-control" name="meta_title.'.$language['language_id'].'" id="main-meta-title-'.$language['language_id'].'" placeholder="'.$eModal['fields']['meta_title'].'" value="'.$names[$language['language_id']]['meta_title'].'" />
-                          </div>';
-
-            $content .= '<div class="form-group">
-                            <label for="main-meta-description-'.$language['language_id'].'">'.$eModal['fields']['meta_description'].'</label>
-                            <textarea rows="3" class="form-control" name="meta_description.'.$language['language_id'].'" id="main-meta-description-'.$language['language_id'].'" placeholder="'.$eModal['fields']['meta_description'].'">'.$names[$language['language_id']]['meta_description'].'</textarea>
-                          </div>';
-
-            $content .= '<div class="form-group">
-                            <label for="main-meta-keywords-'.$language['language_id'].'">'.$eModal['fields']['meta_keywords'].'</label>
-                            <textarea rows="3" class="form-control" name="meta_keyword.'.$language['language_id'].'" id="main-meta-keywords-'.$language['language_id'].'" placeholder="'.$eModal['fields']['meta_keywords'].'">'.$names[$language['language_id']]['meta_keyword'].'</textarea>
-                          </div>';
-
-            $content .= '<div class="form-group">
-                            <label for="main-tags-'.$language['language_id'].'">'.$eModal['fields']['tags'].'</label>
-                            <input type="text" class="form-control tags" name="tag.'.$language['language_id'].'" id="main-tags-'.$language['language_id'].'" placeholder="'.$eModal['fields']['tags'].'" value="'.$names[$language['language_id']]['tag'].'" />
-                            <div class="alert alert-warning" style="margin-top: 3px">'.$eModal['notes']['tags'].'</div>
-                          </div>';
-
-            $content .= '</div>';
-
-            $content .= '</form>';
-        }
-
-        $content .= '</div></div>';
-
-        $content .= '<script>$(".tags").tagsinput(\'destroy\'); $(".tags").tagsinput();</script>';
-
-        return $content;
+        return $this->load->view(
+            'extension/module/catalog_pro/edit_product/block_general',
+            array(
+                "languages" => $languages,
+                "names" => $names,
+                "modal" => $eModal,
+            )
+        );
     }
 
+    private function editDataData($eModal, $item) {
+        $this->load->model('localisation/tax_class');
+        $this->load->model('localisation/stock_status');
+        $this->load->model('localisation/length_class');
+        $this->load->model('localisation/weight_class');
+
+        return $this->load->view(
+            'extension/module/catalog_pro/edit_product/block_data',
+            array(
+                "modal" => $eModal,
+                "item" => $item,
+                'dict' => array (
+                    'tax' => $this->model_localisation_tax_class->getTaxClasses(),
+                    'subtract' => array (
+                        array("value" => 0, "title" => $eModal['text']['no']),
+                        array("value" => 1, "title" => $eModal['text']['yes']),
+                    ),
+                    'shipping' => array (
+                        array("value" => 0, "title" => $eModal['text']['no']),
+                        array("value" => 1, "title" => $eModal['text']['yes']),
+                    ),
+                    'stock_status' => $this->model_localisation_stock_status->getStockStatuses(),
+                    'length_class' => $this->model_localisation_length_class->getLengthClasses(),
+                    'weight_class' => $this->model_localisation_weight_class->getWeightClasses(),
+                    'status' => array (
+                        array("value" => 0, "title" => $eModal['text']['status_no']),
+                        array("value" => 1, "title" => $eModal['text']['status_yes']),
+                    ),
+                ),
+            )
+        );
+    }
+
+    private function editDataLinks($eModal, $item) {
+        $this->load->model('catalog/manufacturer');
+        $this->load->model('catalog/filter');
+        $this->load->model('setting/store');
+        $this->load->model('catalog/download');
+        $this->load->model('extension/catalog_pro/category');
+
+        $related = array();
+        if (isset($item['related']) && $item['related'] !== array()) {
+            $filter_data = array(
+                'start'           => 0,
+                'limit'           => 1000,
+                'filter_product_id' => $item['related'],
+            );
+            $temp = $this->model_extension_catalog_pro_product->getProducts($filter_data);
+            foreach ($temp as $p) {
+                $related[] = array(
+                    "id" => $p['product_id'],
+                    "text" => $this->getProductNameForAjax($p, $eModal),
+                );
+            }
+        }
+
+        $manufacturers = $this->model_catalog_manufacturer->getManufacturers(array());
+        $categories = $this->model_extension_catalog_pro_category->getCategories();
+        $filters = array();
+        foreach ($this->model_catalog_filter->getFilters(array()) as $temp)
+            $filters[$temp['group']][] = $temp;
+
+        $stores = array(
+            array(
+                'store_id' => 0,
+                'name'     => $this->language->get('text_default')
+            )
+        );
+
+        foreach ($this->model_setting_store->getStores() as $store) {
+            $stores[] = array(
+                'store_id' => $store['store_id'],
+                'name'     => $store['name']
+            );
+        }
+
+        $downloads = array();
+
+        foreach ($this->model_catalog_download->getDownloads(array()) as $download)
+            $downloads[] = array(
+                'download_id' => $download['download_id'],
+                'name'        => $download['name']
+            );
+
+        $ajaxProducts = str_replace("&amp;", "&", $this->url->link('extension/module/catalog_pro_product/ajaxProducts', 'user_token=' . $this->session->data['user_token'], true));
+
+        return $this->load->view(
+            'extension/module/catalog_pro/edit_product/block_links',
+            array(
+                "item" => $item,
+                "modal" => $eModal,
+                "manufacturers" => $manufacturers,
+                "categories" => $categories,
+                "filters" => $filters,
+                "stores" => $stores,
+                "downloads" => $downloads,
+                "ajaxProducts" => $ajaxProducts,
+                "related" => $related,
+            )
+        );
+    }
 
     public function saveData() {
         $this->loadLanguage();
@@ -1014,7 +1082,7 @@ class ControllerExtensionModuleCatalogProProduct extends Controller {
         $id = $this->request->post['id'];
         $languages = $this->model_localisation_language->getLanguages(array());
 
-        if (!in_array($action, array('main'))) {
+        if (!in_array($action, array('main', 'data', 'link'))) {
             $this->returnError($eValidation['title'], $eValidation['action']);
             return;
         }
@@ -1109,6 +1177,335 @@ class ControllerExtensionModuleCatalogProProduct extends Controller {
 
                 break;
 
+            case 'data':
+                $this->load->model('localisation/tax_class');
+                $this->load->model('localisation/stock_status');
+                $this->load->model('localisation/length_class');
+                $this->load->model('localisation/weight_class');
+
+                $errors = array();
+                $dict = array ();
+                foreach ($this->model_localisation_tax_class->getTaxClasses() as $d)
+                    $dict['tax'][] = $d['tax_class_id'];
+                $dict['subtract'] = [0, 1];
+                $dict['shipping'] = [0, 1];
+                foreach ($this->model_localisation_stock_status->getStockStatuses() as $d)
+                    $dict['stock_status'][] = $d['stock_status_id'];
+                foreach ($this->model_localisation_length_class->getLengthClasses() as $d)
+                    $dict['length_class'][] = $d['length_class_id'];
+                foreach ($this->model_localisation_weight_class->getWeightClasses() as $d)
+                    $dict['weight_class'][] = $d['weight_class_id'];
+                $dict['status'] = [0, 1];
+
+
+                $validator = Validation::createValidator();
+
+                $constraint = new Assert\Collection([
+                    "model" => array(
+                        new Assert\Length([
+                            'max' => 64,
+                            'maxMessage' => $eValidation['model.max'],
+                        ]),
+                        new Assert\NotBlank([
+                            'message' => $eValidation['model.required']
+                        ]),
+                    ),
+                    "sku" => array(
+                        new Length([
+                            'max' => 64,
+                            'maxMessage' => $eValidation['sku.max'],
+                        ])
+                    ),
+                    "upc" => array(
+                        new Length([
+                            'max' => 12,
+                            'maxMessage' => $eValidation['upc.max'],
+                        ])
+                    ),
+                    "ean" => array(
+                        new Length([
+                            'max' => 14,
+                            'maxMessage' => $eValidation['ean.max'],
+                        ])
+                    ),
+                    "jan" => array(
+                        new Length([
+                            'max' => 13,
+                            'maxMessage' => $eValidation['jan.max'],
+                        ])
+                    ),
+                    "isbn" => array(
+                        new Length([
+                            'max' => 17,
+                            'maxMessage' => $eValidation['isbn.max'],
+                        ])
+                    ),
+                    "mpn" => array(
+                        new Length([
+                            'max' => 64,
+                            'maxMessage' => $eValidation['mpn.max'],
+                        ])
+                    ),
+                    "location" => array(
+                        new Length([
+                            'max' => 128,
+                            'maxMessage' => $eValidation['location.max'],
+                        ])
+                    ),
+                    "price" => array (
+                        new Range([
+                            'min' => 0,
+                            'minMessage' => $eValidation['price.min'],
+                            'invalidMessage' => $eValidation['price.invalid'],
+                        ]),
+                        new NotBlank([
+                            'message' => $eValidation['price.required']
+                        ]),
+                    ),
+                    "tax_class_id" => array (
+                        new Assert\Choice([
+                            'choices' => $dict['tax'],
+                            'message' => $eValidation['tax_class_id.in']
+                        ]),
+                    ),
+                    "quantity" => array(
+                        new Range([
+                            'min' => 0,
+                            'minMessage' => $eValidation['quantity.min'],
+                            'invalidMessage' => $eValidation['quantity.invalid'],
+                        ]),
+                        new NotBlank([
+                            'message' => $eValidation['quantity.required']
+                        ]),
+                    ),
+                    "subtract" => array (
+                        new Assert\Choice([
+                            'choices' => $dict['subtract'],
+                            'message' => $eValidation['tax_class_id.in']
+                        ]),
+                    ),
+                    "minimum" => array(
+                        new Range([
+                            'min' => 1,
+                            'minMessage' => $eValidation['minimum.min'],
+                            'invalidMessage' => $eValidation['minimum.invalid'],
+                        ]),
+                        new NotBlank([
+                            'message' => $eValidation['minimum.required']
+                        ]),
+                    ),
+                    "stock_status_id" => array (
+                        new Assert\Choice([
+                            'choices' => $dict['stock_status'],
+                            'message' => $eValidation['stock_status_id.in']
+                        ]),
+                    ),
+                    "shipping" => array (
+                        new Assert\Choice([
+                            'choices' => $dict['shipping'],
+                            'message' => $eValidation['shipping.in']
+                        ]),
+                    ),
+                    "date_available" => array(
+                        new Date([
+                            'message' => $eValidation['date_available.invalid'],
+                        ])
+                    ),
+                    "length" => array(
+                        new Range([
+                            'min' => 0,
+                            'minMessage' => $eValidation['length.min'],
+                            'invalidMessage' => $eValidation['length.invalid'],
+                        ])
+                    ),
+                    "width" => array(
+                        new Range([
+                            'min' => 0,
+                            'minMessage' => $eValidation['width.min'],
+                            'invalidMessage' => $eValidation['width.invalid'],
+                        ])
+                    ),
+                    "height" => array(
+                        new Range([
+                            'min' => 0,
+                            'minMessage' => $eValidation['height.min'],
+                            'invalidMessage' => $eValidation['height.invalid'],
+                        ])
+                    ),
+                    "length_class_id" => array (
+                        new Assert\Choice([
+                            'choices' => $dict['length_class'],
+                            'message' => $eValidation['length_class_id.in']
+                        ]),
+                    ),
+                    "weight" => array(
+                        new Range([
+                            'min' => 0,
+                            'minMessage' => $eValidation['weight.min'],
+                            'invalidMessage' => $eValidation['weight.invalid'],
+                        ])
+                    ),
+                    "weight_class_id" => array (
+                        new Assert\Choice([
+                            'choices' => $dict['weight_class'],
+                            'message' => $eValidation['weight_class_id.in']
+                        ]),
+                    ),
+                    "status" => array (
+                        new Assert\Choice([
+                            'choices' => $dict['status'],
+                            'message' => $eValidation['status.in']
+                        ]),
+                    ),
+                    "sort_order" => array (
+                        new Range([
+                            'min' => 0,
+                            'minMessage' => $eValidation['sort_order.min'],
+                            'invalidMessage' => $eValidation['sort_order.invalid'],
+                        ])
+                    ),
+                ]);
+
+
+                $violations = $validator->validate($post, $constraint);
+
+                if (0 !== count($violations)) {
+                    // there are errors, now you can show them
+                    foreach ($violations as $violation) {
+                        $errors[] = $violation->getMessage();
+                    }
+                }
+
+
+                if ($errors !== array()) {
+                    $this->returnError($eValidation['title'], $errors);
+                    return;
+                }
+
+                $this->model_extension_catalog_pro_product->saveProduct($id, $post);
+
+                break;
+
+
+            case 'link':
+                $this->load->model('catalog/manufacturer');
+                $this->load->model('catalog/filter');
+                $this->load->model('setting/store');
+                $this->load->model('catalog/download');
+                $this->load->model('extension/catalog_pro/category');
+
+                $errors = array();
+                $dict = array ();
+
+                $dict['manufacturers'] = array_map(function($manufacturer) {
+                    return $manufacturer['manufacturer_id'];
+                }, $this->model_catalog_manufacturer->getManufacturers(array()));
+
+                $dict['categories'] = array_map(function($category) {
+                    return $category['category_id'];
+                }, $this->model_extension_catalog_pro_category->getCategories());
+
+                $dict['filters'] = array_map(function($filter) {
+                    return $filter['filter_id'];
+                }, $this->model_catalog_filter->getFilters(array()));
+
+                $dict['stores'] = array(0);
+                $dict['stores'] = array_merge($dict['stores'], array_map(function($store) {
+                    return $store['store_id'];
+                }, $this->model_setting_store->getStores()));
+
+                $dict['downloads'] = array_map(function($download) {
+                    return $download['download_id'];
+                }, $this->model_catalog_download->getDownloads(array()));
+
+                $validator = Validation::createValidator();
+
+                $constraint = new Assert\Collection([
+                    "manufacturer_id" => array (
+                        new Assert\Choice([
+                            'choices' => $dict['manufacturers'],
+                            'message' => $eValidation['manufacturer.in']
+                        ]),
+                    ),
+                    "filters" => array(
+                        new Assert\Optional(
+                            array(
+                                new Assert\Choice([
+                                    'multiple' => true,
+                                    'choices' => $dict['filters'],
+                                    'message' => $eValidation['filters.in']
+                                ]),
+                            )
+                        )
+                    ),
+                    "stores" => array(
+                        new Assert\Optional(
+                            array(
+                                new Assert\Choice([
+                                    'multiple' => true,
+                                    'choices' => $dict['stores'],
+                                    'message' => $eValidation['stores.in']
+                                ]),
+                            )
+                        )
+                    ),
+                    "downloads" => array(
+                        new Assert\Optional(
+                            array(
+                                new Assert\Choice([
+                                    'multiple' => true,
+                                    'choices' => $dict['downloads'],
+                                    'message' => $eValidation['downloads.in'],
+                                ]),
+                            )
+                        )
+                    ),
+                    "category" => array(
+                        new Assert\Optional(
+                            array(
+                                new Assert\Choice([
+                                    'multiple' => true,
+                                    'choices' => $dict['categories'],
+                                    'message' => $eValidation['category.in'],
+                                ]),
+                            )
+                        )
+                    ),
+                    "related" => array(
+                        new Assert\Optional(
+                            array(
+                                new Assert\Type([
+                                    'type' => 'array'
+                                ]),
+                            )
+                        )
+                    ),
+                ]);
+
+
+                $violations = $validator->validate($post, $constraint);
+
+                if (0 !== count($violations)) {
+                    foreach ($violations as $violation) {
+                        $errors[] = $violation->getMessage();
+                    }
+                }
+
+
+                if ($errors !== array()) {
+                    $this->returnError($eValidation['title'], $errors);
+                    return;
+                }
+
+                $this->model_extension_catalog_pro_product->saveProduct($id, array("manufacturer_id" => $post['manufacturer_id']));
+                $this->model_extension_catalog_pro_product->saveProductCategory($id, isset($post['category'])? $post['category']: array());
+                $this->model_extension_catalog_pro_product->saveProductFilter($id, isset($post['filters'])? $post['filters']: array());
+                $this->model_extension_catalog_pro_product->saveProductStore($id, isset($post['stores'])? $post['stores']: array());
+                $this->model_extension_catalog_pro_product->saveProductDownload($id, isset($post['downloads'])? $post['downloads']: array());
+                $this->model_extension_catalog_pro_product->saveProductRelated($id, isset($post['related'])? $post['related']: array());
+
+                break;
+
         }
 
         $this->response->addHeader('Content-Type: application/json');
@@ -1116,5 +1513,53 @@ class ControllerExtensionModuleCatalogProProduct extends Controller {
             "title" => $this->language->get('text_success_save_title'),
             "message" => $this->language->get('text_success_save')
         ]));
+    }
+
+    public function ajaxProducts() {
+        $this->loadLanguage();
+
+        $this->load->model('extension/catalog_pro/product');
+        $this->load->model('localisation/currency');
+
+        $eModal = $this->language->get('modal');
+
+        $query = $this->request->get['q']['term'];
+        $filter_data = array(
+            'start'             => 0,
+            'limit'             => 10,
+            'q'                 => $query,
+            'ignore'            => isset($this->request->get['ignore'])? $this->request->get['ignore']: array()
+        );
+
+        $products = array();
+        $temp = $this->model_extension_catalog_pro_product->getProductsByFilter($filter_data);
+
+        foreach ($temp as $p) {
+            $products[] = [
+                "id" => $p['product_id'],
+                "text" => $this->getProductNameForAjax($p, $eModal),
+            ];
+        }
+
+        $this->response->addHeader('Content-Type: application/json');
+        $this->response->setOutput(json_encode(
+            array(
+                "results" => $products,
+                "pagination" => array (
+                    "more" => false,
+                )
+            )
+        ));
+    }
+
+    private function getProductNameForAjax($p, $eModal) {
+        $additional = array();
+
+        if ($p['model'] != "")
+            $additional[] = $eModal['fields']['model'].": ".$p['model'];
+        if ($p['sku'] != "")
+            $additional[] = $eModal['fields']['sku'].": ".$p['sku'];
+
+        return $p['name'].($additional !== array()? ". <span style='color: #ccc'>".implode(", ", $additional)."</span>": "");
     }
 }
