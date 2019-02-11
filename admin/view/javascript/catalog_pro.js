@@ -522,15 +522,32 @@ $(document).ready(function () {
     let elements = {};
     $("#editData").find("select, input, textarea").each(function(idx, element) {
       if ($(element).attr("name") != undefined) {
-
         if ($(element).is("input[type='text']") || $(element).is("input[type='hidden']") || $(element).is("textarea")) {
-          elements[$(element).attr("name")] = $(element).data("toggle") == "summernote" ? $(element).summernote("code") : $(element).val();
+          let value =  $(element).data("toggle") == "summernote" ? $(element).summernote("code") : $(element).val();
+          if ($(element).data("multiple") == "1") {
+            if (typeof elements[$(element).attr("name")] == "undefined")
+              elements[$(element).attr("name")] = new Array(value);
+            else
+              elements[$(element).attr("name")].push(value);
+          }
+          else
+            elements[$(element).attr("name")] = value;
         }
         else if ($(element).is("select")) {
+          let value = "";
           if ($(element).attr("multiple") === undefined)
-            elements[$(element).attr("name")] = $(element).find("option:selected").val();
+            value = $(element).find("option:selected").val();
           else
-            elements[$(element).attr("name")] = $.map($(element).find("option:selected"), function(select) { return $(select).val(); });
+            value = $.map($(element).find("option:selected"), function(select) { return $(select).val(); });
+
+          if ($(element).data("multiple") == "1") {
+            if (typeof elements[$(element).attr("name")] == "undefined")
+              elements[$(element).attr("name")] = new Array(value);
+            else
+              elements[$(element).attr("name")].push(value);
+          }
+          else
+            elements[$(element).attr("name")] = value;
         }
       }
     });
@@ -539,6 +556,7 @@ $(document).ready(function () {
     if ($('#editDataSave').attr("data-action") == "link") {
       elements['category'] = $.map(categoryEditTree.getCheckedNodes(), function(checked) { return checked.id; });
     }
+
 
     $.post( saveDataLink, { data: elements, id: $(this).attr("data-id"), action: $(this).attr("data-action") })
       .done(function(data) {
@@ -552,6 +570,26 @@ $(document).ready(function () {
           toastr.error(data.responseJSON.message, data.responseJSON.title, {timeOut: 20000});
       });
 
+  });
+
+  $("body").on("click", ".attribute-add", function() {
+    $(".attrs-data select.select2").select2("destroy").removeAttr("data-select2-id").find("option").removeAttr("data-select2-id");
+
+    let clone = $(".attrs-data .panel:last").clone(true);
+
+    $(clone).find("input").each(function(idx, element) {
+      $(element).val("");
+    });
+    $(clone).find("select").each(function(idx, element) {
+      $(element).find("option:first").prop("selected", true);
+    });
+
+    $(".attrs-data .panel:last").after($(clone).get(0));
+
+    $(".attrs-data select.select2").select2();
+
+
+    return false;
   });
 
 });

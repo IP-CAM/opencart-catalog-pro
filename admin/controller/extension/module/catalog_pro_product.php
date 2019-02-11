@@ -92,7 +92,7 @@ class ControllerExtensionModuleCatalogProProduct extends Controller {
                     ];
                 }
             }
-			
+
 			$data['columns'] = json_encode($data['columns']);
 			$data['limit'] = $config['limit'];
         }
@@ -939,6 +939,10 @@ class ControllerExtensionModuleCatalogProProduct extends Controller {
                 $title = $eModal['title']['link'];
                 $content = $this->editDataLinks($eModal, $item);
                 break;
+            case 'attrs':
+                $title = $eModal['title']['attrs'];
+                $content = $this->editDataAttrs($eModal, $item);
+                break;
             default:
                 $eValidation = $this->language->get('validate');
                 return $this->returnError($eValidation['title'], $eValidation['action']);
@@ -1069,6 +1073,25 @@ class ControllerExtensionModuleCatalogProProduct extends Controller {
         );
     }
 
+    private function editDataAttrs($eModal, $item) {
+        $this->load->model('catalog/attribute');
+        $attributes = $this->model_catalog_attribute->getAttributes();
+        $languages = $this->model_localisation_language->getLanguages(array());
+
+        $eEdit = $this->language->get('edit');
+
+        return $this->load->view(
+            'extension/module/catalog_pro/edit_product/block_attrs',
+            array(
+                "item" => $item,
+                "modal" => $eModal,
+                "attributes" => $attributes,
+                "languages" => $languages,
+                "edit" => $eEdit,
+            )
+        );
+    }
+
     public function saveData() {
         $this->loadLanguage();
         $this->load->model('extension/catalog_pro/product');
@@ -1082,7 +1105,7 @@ class ControllerExtensionModuleCatalogProProduct extends Controller {
         $id = $this->request->post['id'];
         $languages = $this->model_localisation_language->getLanguages(array());
 
-        if (!in_array($action, array('main', 'data', 'link'))) {
+        if (!in_array($action, array('main', 'data', 'link', 'attrs'))) {
             $this->returnError($eValidation['title'], $eValidation['action']);
             return;
         }
@@ -1112,7 +1135,7 @@ class ControllerExtensionModuleCatalogProProduct extends Controller {
                 foreach ($languages as $language) {
                     $prefix = "[{$language['name']}] ";
 
-                    $constraint = new Assert\Collection([
+                    $constraint = new Assert\Collection(array(
                         "name" => array(
                             new Assert\Length([
                                 'min' => 2,
@@ -1125,35 +1148,35 @@ class ControllerExtensionModuleCatalogProProduct extends Controller {
                             ]),
                         ),
                         "description" => array(
-                            new Assert\Type(['type' => 'string'])
+                            new Assert\Type(array('type' => 'string'))
                         ),
                         "meta_title" => array(
-                            new Assert\Length([
+                            new Assert\Length(array(
                                 'min' => 2,
                                 'max' => 255,
                                 'minMessage' => $prefix.$eValidation['meta_title.min'],
                                 'maxMessage' => $prefix.$eValidation['meta_title.max'],
-                            ]),
-                            new Assert\NotBlank([
+                            )),
+                            new Assert\NotBlank(array(
                                 'message' => $prefix.$eValidation['meta_title.required']
-                            ]),
+                            )),
                         ),
                         "meta_description" => array(
-                            new Assert\Length([
+                            new Assert\Length(array(
                                 'max' => 255,
                                 'maxMessage' => $prefix.$eValidation['meta_description.max'],
-                            ]),
+                            )),
                         ),
                         "meta_keyword" => array(
-                            new Assert\Length([
+                            new Assert\Length(array(
                                 'max' => 255,
                                 'maxMessage' => $prefix.$eValidation['meta_keyword.max'],
-                            ]),
+                            )),
                         ),
                         "tag" => array(
-                            new Assert\Type(['type' => 'string'])
+                            new Assert\Type(array('type' => 'string'))
                         ),
-                    ]);
+                    ));
 
 
                     $violations = $validator->validate($fields[$language['language_id']], $constraint);
@@ -1202,167 +1225,167 @@ class ControllerExtensionModuleCatalogProProduct extends Controller {
 
                 $constraint = new Assert\Collection([
                     "model" => array(
-                        new Assert\Length([
+                        new Assert\Length(array(
                             'max' => 64,
                             'maxMessage' => $eValidation['model.max'],
-                        ]),
-                        new Assert\NotBlank([
+                        )),
+                        new Assert\NotBlank(array(
                             'message' => $eValidation['model.required']
-                        ]),
+                        )),
                     ),
                     "sku" => array(
-                        new Length([
+                        new Length(array(
                             'max' => 64,
                             'maxMessage' => $eValidation['sku.max'],
-                        ])
+                        ))
                     ),
                     "upc" => array(
-                        new Length([
+                        new Length(array(
                             'max' => 12,
                             'maxMessage' => $eValidation['upc.max'],
-                        ])
+                        ))
                     ),
                     "ean" => array(
-                        new Length([
+                        new Length(array(
                             'max' => 14,
                             'maxMessage' => $eValidation['ean.max'],
-                        ])
+                        ))
                     ),
                     "jan" => array(
-                        new Length([
+                        new Length(array(
                             'max' => 13,
                             'maxMessage' => $eValidation['jan.max'],
-                        ])
+                        ))
                     ),
                     "isbn" => array(
-                        new Length([
+                        new Length(array(
                             'max' => 17,
                             'maxMessage' => $eValidation['isbn.max'],
-                        ])
+                        ))
                     ),
                     "mpn" => array(
-                        new Length([
+                        new Length(array(
                             'max' => 64,
                             'maxMessage' => $eValidation['mpn.max'],
-                        ])
+                        ))
                     ),
                     "location" => array(
-                        new Length([
+                        new Length(array(
                             'max' => 128,
                             'maxMessage' => $eValidation['location.max'],
-                        ])
+                        ))
                     ),
                     "price" => array (
-                        new Range([
+                        new Range(array(
                             'min' => 0,
                             'minMessage' => $eValidation['price.min'],
                             'invalidMessage' => $eValidation['price.invalid'],
-                        ]),
-                        new NotBlank([
+                        )),
+                        new NotBlank(array(
                             'message' => $eValidation['price.required']
-                        ]),
+                        )),
                     ),
                     "tax_class_id" => array (
-                        new Assert\Choice([
+                        new Assert\Choice(array(
                             'choices' => $dict['tax'],
                             'message' => $eValidation['tax_class_id.in']
-                        ]),
+                        )),
                     ),
                     "quantity" => array(
-                        new Range([
+                        new Range(array(
                             'min' => 0,
                             'minMessage' => $eValidation['quantity.min'],
                             'invalidMessage' => $eValidation['quantity.invalid'],
-                        ]),
-                        new NotBlank([
+                        )),
+                        new NotBlank(array(
                             'message' => $eValidation['quantity.required']
-                        ]),
+                        )),
                     ),
                     "subtract" => array (
-                        new Assert\Choice([
+                        new Assert\Choice(array(
                             'choices' => $dict['subtract'],
                             'message' => $eValidation['tax_class_id.in']
-                        ]),
+                        )),
                     ),
                     "minimum" => array(
-                        new Range([
+                        new Range(array(
                             'min' => 1,
                             'minMessage' => $eValidation['minimum.min'],
                             'invalidMessage' => $eValidation['minimum.invalid'],
-                        ]),
-                        new NotBlank([
+                        )),
+                        new NotBlank(array(
                             'message' => $eValidation['minimum.required']
-                        ]),
+                        )),
                     ),
                     "stock_status_id" => array (
-                        new Assert\Choice([
+                        new Assert\Choice(array(
                             'choices' => $dict['stock_status'],
                             'message' => $eValidation['stock_status_id.in']
-                        ]),
+                        )),
                     ),
                     "shipping" => array (
-                        new Assert\Choice([
+                        new Assert\Choice(array(
                             'choices' => $dict['shipping'],
                             'message' => $eValidation['shipping.in']
-                        ]),
+                        )),
                     ),
                     "date_available" => array(
-                        new Date([
+                        new Date(array(
                             'message' => $eValidation['date_available.invalid'],
-                        ])
+                        ))
                     ),
                     "length" => array(
-                        new Range([
+                        new Range(array(
                             'min' => 0,
                             'minMessage' => $eValidation['length.min'],
                             'invalidMessage' => $eValidation['length.invalid'],
-                        ])
+                        ))
                     ),
                     "width" => array(
-                        new Range([
+                        new Range(array(
                             'min' => 0,
                             'minMessage' => $eValidation['width.min'],
                             'invalidMessage' => $eValidation['width.invalid'],
-                        ])
+                        ))
                     ),
                     "height" => array(
-                        new Range([
+                        new Range(array(
                             'min' => 0,
                             'minMessage' => $eValidation['height.min'],
                             'invalidMessage' => $eValidation['height.invalid'],
-                        ])
+                        ))
                     ),
                     "length_class_id" => array (
-                        new Assert\Choice([
+                        new Assert\Choice(array(
                             'choices' => $dict['length_class'],
                             'message' => $eValidation['length_class_id.in']
-                        ]),
+                        )),
                     ),
                     "weight" => array(
-                        new Range([
+                        new Range(array(
                             'min' => 0,
                             'minMessage' => $eValidation['weight.min'],
                             'invalidMessage' => $eValidation['weight.invalid'],
-                        ])
+                        ))
                     ),
                     "weight_class_id" => array (
-                        new Assert\Choice([
+                        new Assert\Choice(array(
                             'choices' => $dict['weight_class'],
                             'message' => $eValidation['weight_class_id.in']
-                        ]),
+                        )),
                     ),
                     "status" => array (
-                        new Assert\Choice([
+                        new Assert\Choice(array(
                             'choices' => $dict['status'],
                             'message' => $eValidation['status.in']
-                        ]),
+                        )),
                     ),
                     "sort_order" => array (
-                        new Range([
+                        new Range(array(
                             'min' => 0,
                             'minMessage' => $eValidation['sort_order.min'],
                             'invalidMessage' => $eValidation['sort_order.invalid'],
-                        ])
+                        ))
                     ),
                 ]);
 
@@ -1422,61 +1445,61 @@ class ControllerExtensionModuleCatalogProProduct extends Controller {
 
                 $constraint = new Assert\Collection([
                     "manufacturer_id" => array (
-                        new Assert\Choice([
+                        new Assert\Choice(array(
                             'choices' => $dict['manufacturers'],
                             'message' => $eValidation['manufacturer.in']
-                        ]),
+                        )),
                     ),
                     "filters" => array(
                         new Assert\Optional(
                             array(
-                                new Assert\Choice([
+                                new Assert\Choice(array(
                                     'multiple' => true,
                                     'choices' => $dict['filters'],
                                     'message' => $eValidation['filters.in']
-                                ]),
+                                )),
                             )
                         )
                     ),
                     "stores" => array(
                         new Assert\Optional(
                             array(
-                                new Assert\Choice([
+                                new Assert\Choice(array(
                                     'multiple' => true,
                                     'choices' => $dict['stores'],
                                     'message' => $eValidation['stores.in']
-                                ]),
+                                )),
                             )
                         )
                     ),
                     "downloads" => array(
                         new Assert\Optional(
                             array(
-                                new Assert\Choice([
+                                new Assert\Choice(array(
                                     'multiple' => true,
                                     'choices' => $dict['downloads'],
                                     'message' => $eValidation['downloads.in'],
-                                ]),
+                                )),
                             )
                         )
                     ),
                     "category" => array(
                         new Assert\Optional(
                             array(
-                                new Assert\Choice([
+                                new Assert\Choice(array(
                                     'multiple' => true,
                                     'choices' => $dict['categories'],
                                     'message' => $eValidation['category.in'],
-                                ]),
+                                )),
                             )
                         )
                     ),
                     "related" => array(
                         new Assert\Optional(
                             array(
-                                new Assert\Type([
+                                new Assert\Type(array(
                                     'type' => 'array'
-                                ]),
+                                )),
                             )
                         )
                     ),
@@ -1503,6 +1526,90 @@ class ControllerExtensionModuleCatalogProProduct extends Controller {
                 $this->model_extension_catalog_pro_product->saveProductStore($id, isset($post['stores'])? $post['stores']: array());
                 $this->model_extension_catalog_pro_product->saveProductDownload($id, isset($post['downloads'])? $post['downloads']: array());
                 $this->model_extension_catalog_pro_product->saveProductRelated($id, isset($post['related'])? $post['related']: array());
+
+                break;
+
+            case 'attrs':
+                $this->load->model('catalog/attribute');
+
+                $languages = $this->model_localisation_language->getLanguages(array());
+                $attributesId = array_map(function($a) { return $a['attribute_id']; }, $this->model_catalog_attribute->getAttributes());
+                $languagesId = array_map(function($a) { return $a['language_id']; }, $languages);
+
+                $attrs = array();
+
+                $unique = array();
+
+                foreach ($post['attribute'] as $key => $attribute) {
+                    $temp = "";
+                    foreach ($languages as $language)
+                        $temp .= $post['language.' . $language['language_id']][$key];
+
+                    if ($temp != "") {
+                        foreach ($languages as $language) {
+                            $attrs[] = [
+                                'product_id' => (int)$id,
+                                'attribute_id' => $attribute,
+                                'language_id' => $language['language_id'],
+                                'text' => $post['language.' . $language['language_id']][$key]
+                            ];
+                        }
+
+                        $unique[] = $attribute;
+                    }
+                }
+
+                $errors = array();
+
+                if (count($unique) !== count(array_unique($unique)))
+                    $errors[] = $eValidation['attribute_id.unique'];
+
+                $validator = Validation::createValidator();
+
+                $constraint = new Assert\Collection([
+                    'product_id' => array (
+                        new Assert\NotBlank(array('message' => $eValidation['product_id.required'])),
+                        new Range([
+                            'min' => 1,
+                            'minMessage' => $eValidation['product_id.integer'],
+                            'invalidMessage' => $eValidation['product_id.integer'],
+                        ]),
+                    ),
+                    'attribute_id' => array (
+                        new Assert\NotBlank(array('message' => $eValidation['attribute_id.required'])),
+                        new Assert\Choice(array(
+                            'choices' => $attributesId,
+                            'message' => $eValidation['attribute_id.in'],
+                        )),
+                    ),
+                    'language_id' => array (
+                        new Assert\NotBlank(array('message' => $eValidation['language_id.required'])),
+                        new Assert\Choice(array(
+                            'choices' => $languagesId,
+                            'message' => $eValidation['language_id.in'],
+                        )),
+                    ),
+                    'text' => array (
+                        new Assert\NotBlank(array('message' => $eValidation['attribute_text.required'])),
+                    )
+                ]);
+
+                foreach ($attrs as $attr) {
+                    $violations = $validator->validate($attr, $constraint);
+
+                    if (0 !== count($violations)) {
+                        foreach ($violations as $violation) {
+                            $errors[] = $violation->getMessage();
+                        }
+                    }
+                }
+
+                if ($errors !== array()) {
+                    $this->returnError($eValidation['title'], $errors);
+                    return;
+                }
+
+                $this->model_extension_catalog_pro_product->saveProductAttributes($id, $attrs);
 
                 break;
 

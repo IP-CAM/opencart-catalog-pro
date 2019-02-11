@@ -252,3 +252,9 @@ div.ruler div.cursor {height:20px; width:30px; background-color:#3C6E31; color:w
 .select2 .select2-selection__choice span {
     color: #FFF !important;
 }
+
+.attrs-data .form-group {
+    padding-top: 3px;
+    padding-bottom: 3px;
+}
+

@@ -69,6 +69,8 @@ class ModelExtensionCatalogProProduct extends Model {
             return $related['related_id'];
         }, $this->getProductRelated(array($product_id)));
 
+        $row['attributes'] = $this->getProductAttributes(array($product_id));
+
         return $row;
     }
 
@@ -301,6 +303,18 @@ class ModelExtensionCatalogProProduct extends Model {
         return $product_description_data;
     }
 
+    public function getProductAttributes($ids) {
+        $attributes = array();
+
+        $query = $this->db->query("SELECT * FROM " . DB_PREFIX . "product_attribute WHERE product_id in (".implode(", ", $ids).")");
+
+        foreach ($query->rows as $result) {
+            $attributes[$result['attribute_id']][$result['language_id']] = $result['text'];
+        }
+
+        return $attributes;
+    }
+
     public function saveProductDescriptions($product_id, $language_id, $values) {
         $sql = array();
         foreach ($values as $field => $value) {
@@ -408,6 +422,20 @@ class ModelExtensionCatalogProProduct extends Model {
         if ($related !== array())
             foreach ($related as $r) {
                 $this->db->query("INSERT INTO " . DB_PREFIX . "product_related SET product_id = '" . (int)$product_id . "', related_id = '" . (int)$r . "';");
+            }
+
+        $this->db->query("UPDATE " . DB_PREFIX . "product SET date_modified = NOW() WHERE product_id = '" . (int)$product_id . "'");
+        return;
+    }
+
+    public function saveProductAttributes($product_id, $attributes) {
+        $this->db->query("DELETE FROM " . DB_PREFIX . "product_attribute WHERE product_id = '" . (int)$product_id . "'");
+
+        if ($attributes !== array())
+            foreach ($attributes as $a) {
+                $this->db->query("INSERT INTO " . DB_PREFIX . "product_attribute SET product_id = '" . (int)$product_id . "', attribute_id = '" . $a['attribute_id'] . "', language_id = '" . $a['language_id'] . "', text = '".$this->db->escape($a['text'])."';");
+
+                echo "INSERT INTO " . DB_PREFIX . "product_attribute SET product_id = '" . (int)$product_id . "', attribute_id = '" . $a['attribute_id'] . "', language_id = '" . $a['language_id'] . "', text = '".$this->db->escape($a['text'])."';<BR>";
             }
 
         $this->db->query("UPDATE " . DB_PREFIX . "product SET date_modified = NOW() WHERE product_id = '" . (int)$product_id . "'");
