@@ -943,6 +943,10 @@ class ControllerExtensionModuleCatalogProProduct extends Controller {
                 $title = $eModal['title']['attrs'];
                 $content = $this->editDataAttrs($eModal, $item);
                 break;
+            case 'options':
+                $title = $eModal['title']['attrs'];
+                $content = $this->editDataOptions($eModal, $item);
+                break;
             default:
                 $eValidation = $this->language->get('validate');
                 return $this->returnError($eValidation['title'], $eValidation['action']);
@@ -1091,6 +1095,50 @@ class ControllerExtensionModuleCatalogProProduct extends Controller {
             )
         );
     }
+
+    private function editDataOptions($eModal, $item) {
+        $this->load->language('catalog/option');
+        $this->load->model('catalog/option');
+        $options = $this->model_catalog_option->getOptions();
+        $optionAdd = array();
+
+        foreach ($options as &$option) {
+            $values = $this->model_catalog_option->getOptionValues($option['option_id']);
+            $option['values'] = $values;
+
+            if ($option['type'] == 'select' || $option['type'] == 'radio' || $option['type'] == 'checkbox') {
+                $type = $this->language->get('text_choose');
+            }
+            elseif ($option['type'] == 'text' || $option['type'] == 'textarea') {
+                $type = $this->language->get('text_input');
+            }
+            elseif ($option['type'] == 'file') {
+                $type = $this->language->get('text_file');
+            }
+            elseif ($option['type'] == 'date' || $option['type'] == 'datetime' || $option['type'] == 'time') {
+                $type = $this->language->get('text_date');
+            }
+
+            $optionAdd[$type][] = $option;
+        }
+
+        $languages = $this->model_localisation_language->getLanguages(array());
+
+        $eEdit = $this->language->get('edit');
+
+        return $this->load->view(
+            'extension/module/catalog_pro/edit_product/block_options',
+            array(
+                "item" => $item,
+                "modal" => $eModal,
+                "options" => $options,
+                "optionAdd" => $optionAdd,
+                "languages" => $languages,
+                "edit" => $eEdit,
+            )
+        );
+    }
+
 
     public function saveData() {
         $this->loadLanguage();

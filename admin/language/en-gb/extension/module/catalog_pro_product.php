@@ -84,11 +84,25 @@ $_['modal']        = array (
         'stores' => 'Stores',
         'downloads' => 'Downloads',
         'related' => 'Related Products',
+
+        'attr' => 'Attribute',
+        'required' => 'Required',
+        'option_value' => 'Value',
+        'option_quantity' => 'Quantity',
+        'option_subtract' => 'Substract',
+        'option_price' => 'Price',
+        'option_points' => 'Points',
+        'option_weight' => 'Weight',
+        'option_add' => 'Add option',
+
     ),
     'notes' => array (
         'tags' => 'To add a tag, enter its data and press Enter',
         'minimum' => 'The minimum quantity of goods in the order (less than this quantity of goods, adding to the basket will be prohibited)',
         'stock_status_id' => 'The status is shown when the item is out of stock.',
+        'option_add' => 'Select attribute...',
+        'option_value_add' => 'Add option value',
+
     ),
     'text' => array (
         'yes' => 'Yes',
@@ -239,7 +253,7 @@ $_['validate']              = array (
     'weight.min' => 'The value of the field "Weight" must be at least {{limit}} characters',
     'weight.invalid' => 'The field "Weight" must be a number',
 
-    'manufacturer.in' => 'с',
+    'manufacturer.in' => 'The value of the "Manufacturer" field is incorrect',
     'filters.in' => 'The value of the "Filters" field is incorrect',
     'stores.in' => 'The value of the "Stores" field is incorrect',
     'downloads.in' => 'The value of the "Downloads" field is incorrect',

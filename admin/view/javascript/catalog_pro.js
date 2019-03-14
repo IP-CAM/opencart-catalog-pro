@@ -510,6 +510,58 @@ $(document).ready(function () {
             });
           });
 
+
+          $("select.select2-option").on('select2:select', function (e) {
+            var data = e.params.data;
+            let product_option_id = (Date.now() / 1000 | 0).toString() + Math.ceil(Math.random() * (9999 - 1000) + 1000);
+
+            $('select.select2-option').val('').trigger('change.select2');
+
+            $(".options-list li").removeClass("active");
+            $(".options-list-content .tab-pane").removeClass("active");
+            $(".options-list").append('<li class="text-right active"><a href="#option'+product_option_id+'" data-toggle="tab">'+data.text+'</a></li>');
+
+            let clone = $(".tab-pane.etalon[data-type='"+$(data.element).data("type")+"']").clone(true);
+
+            $(clone).find('span.select2').remove();
+            $(clone).find('select.select2').removeClass("select2-hidden-accessible").removeAttr("data-select2-id").find("option").removeAttr("data-select2-id");
+
+            $(clone).find("input").each(function(idx, element) {
+              $(element).val("");
+              $(element).attr("name", $(element).attr("name")+product_option_id);
+            });
+            $(clone).find("select").each(function(idx, element) {
+              $(element).find("option:first").prop("selected", true);
+              $(element).attr("name", $(element).attr("name")+product_option_id);
+            });
+
+            $(clone).removeClass("etalon").addClass("active").attr("id", "option"+product_option_id).removeAttr("data-type").css("display", "");
+
+            $(".options-list-content").append($(clone).get(0));
+
+            $(".options-list-content .tab-pane.active select.select2").select2();
+            $(".options-list-content .tab-pane.active .input-group[data-additional-type]").each(function(idx, element) {
+              $(element).addClass($(element).data("additional-type"));
+            });
+
+            $('.options-list-content .tab-pane.active .input-group.date').datetimepicker({
+              language: 'ru',
+              pickTime: false
+            });
+
+            $('.options-list-content .tab-pane.active .input-group.time').datetimepicker({
+              language: 'ru',
+              pickDate: false
+            });
+
+            $('.options-list-content .tab-pane.active .input-group.datetime').datetimepicker({
+              language: 'ru',
+              pickDate: true,
+              pickTime: true
+            });
+          });
+
+
         });
       })
       .fail(function(data) {
@@ -602,7 +654,44 @@ $(document).ready(function () {
     return false;
   });
 
+  $("body").on("click", ".option-remove", function() {
+    if ($(this).parents("tbody").find("tr").length == 1) {
+      let tr = $(this).parents("tr");
+      $(tr).find("input").each(function(idx, element) {
+        $(element).val("");
+      });
+      $(tr).find("select").each(function(idx, element) {
+        $(element).find("option:first").prop("selected", true).trigger('change.select2');
+      });
+    }
+    else
+      $(this).parent().parent().remove();
+  });
 
+  $("body").on("click", ".option-value-add", function() {
+    console.log(11);
+    let time = (Date.now() / 1000 | 0).toString() + Math.ceil(Math.random() * (9999 - 1000) + 1000);
+
+    let clone = $(".options-list-content .tab-pane.active table tbody tr:last").clone(true);
+
+    $(clone).find('span.select2').remove();
+    $(clone).find('select.select2').removeClass("select2-hidden-accessible").removeAttr("data-select2-id").find("option").removeAttr("data-select2-id");
+
+    $(clone).find("input").each(function(idx, element) {
+      let name = $(element).attr("name").substr(0, $(element).attr("name").lastIndexOf("."));
+      $(element).val("");
+      $(element).attr("name", name+"."+time);
+    });
+    $(clone).find("select").each(function(idx, element) {
+      let name = $(element).attr("name").substr(0, $(element).attr("name").lastIndexOf("."));
+      $(element).find("option:first").prop("selected", true);
+      $(element).attr("name", name+"."+time);
+    });
+
+    $(".options-list-content .tab-pane.active table tbody").append($(clone).get(0));
+
+    $(".options-list-content .tab-pane.active table tbody tr:last select.select2").select2();
+  });
 
 });
 
