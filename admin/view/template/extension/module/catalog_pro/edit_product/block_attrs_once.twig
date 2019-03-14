@@ -17,7 +17,7 @@
                     <div class="form-group">
                         <div class="input-group input-group-sm">
                             <span class="input-group-addon" title="{{ language.name }}"><img src="language/{{ language.code }}/{{ language.code }}.png"/>&nbsp</span>
-                            <input type="text" class="form-control" data-multiple="1" name="language.{{ language.language_id }}" value="{% if attribute is not null %}{{ attribute[language.language_id] }}{% endif %}" />
+                            <input type="text" class="form-control" data-multiple="1" name="attribute_text.{{ language.language_id }}" value="{% if attribute is not null %}{{ attribute[language.language_id] }}{% endif %}" />
                         </div>
                     </div>
                 </div>

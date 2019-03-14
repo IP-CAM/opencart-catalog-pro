@@ -134,6 +134,7 @@ $_['edit']                  = array (
         'cancel' => 'Cancel',
         'save' => 'Save',
         'remove' => 'Remove',
+        'attr_add' => 'Add attribute',
     ),
     'price' => array (
         'current' => 'Price:',
@@ -238,10 +239,19 @@ $_['validate']              = array (
     'weight.min' => 'The value of the field "Weight" must be at least {{limit}} characters',
     'weight.invalid' => 'The field "Weight" must be a number',
 
-    'manufacturer.in' => 'The value of the "Manufacturer" field is incorrect',
+    'manufacturer.in' => 'с',
     'filters.in' => 'The value of the "Filters" field is incorrect',
     'stores.in' => 'The value of the "Stores" field is incorrect',
     'downloads.in' => 'The value of the "Downloads" field is incorrect',
     'category.in' => 'The value of the "Categories" field is incorrect',
+
+    'product_id.required' => 'Product ID is required',
+    'product_id.integer' => 'Product ID must be a number',
+    'attribute_id.unique' => 'The field "Attribute" has already been taken.',
+    'attribute_id.required' => 'The field "Attribute" is required',
+    'attribute_id.in' => 'The value of the "Attribute" field is incorrect',
+    'language_id.required' => 'The field "Language" is required',
+    'language_id.in' => 'The value of the "Language" field is incorrect',
+    'attribute_text.required' => 'The field "Attribute text" is required',
 
 );

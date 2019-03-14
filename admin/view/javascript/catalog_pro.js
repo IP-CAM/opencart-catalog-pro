@@ -592,6 +592,18 @@ $(document).ready(function () {
     return false;
   });
 
+
+  $("body").on("click", ".attribute-remove", function() {
+    if ($("#editDataContent .panel.panel-default").length == 1)
+      $(".attribute-add").trigger("click");
+
+    $(this).parents(".panel").remove();
+
+    return false;
+  });
+
+
+
 });
 
 

@@ -434,8 +434,6 @@ class ModelExtensionCatalogProProduct extends Model {
         if ($attributes !== array())
             foreach ($attributes as $a) {
                 $this->db->query("INSERT INTO " . DB_PREFIX . "product_attribute SET product_id = '" . (int)$product_id . "', attribute_id = '" . $a['attribute_id'] . "', language_id = '" . $a['language_id'] . "', text = '".$this->db->escape($a['text'])."';");
-
-                echo "INSERT INTO " . DB_PREFIX . "product_attribute SET product_id = '" . (int)$product_id . "', attribute_id = '" . $a['attribute_id'] . "', language_id = '" . $a['language_id'] . "', text = '".$this->db->escape($a['text'])."';<BR>";
             }
 
         $this->db->query("UPDATE " . DB_PREFIX . "product SET date_modified = NOW() WHERE product_id = '" . (int)$product_id . "'");

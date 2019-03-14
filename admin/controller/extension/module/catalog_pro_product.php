@@ -1543,7 +1543,7 @@ class ControllerExtensionModuleCatalogProProduct extends Controller {
                 foreach ($post['attribute'] as $key => $attribute) {
                     $temp = "";
                     foreach ($languages as $language)
-                        $temp .= $post['language.' . $language['language_id']][$key];
+                        $temp .= $post['attribute_text.' . $language['language_id']][$key];
 
                     if ($temp != "") {
                         foreach ($languages as $language) {
@@ -1551,7 +1551,7 @@ class ControllerExtensionModuleCatalogProProduct extends Controller {
                                 'product_id' => (int)$id,
                                 'attribute_id' => $attribute,
                                 'language_id' => $language['language_id'],
-                                'text' => $post['language.' . $language['language_id']][$key]
+                                'text' => $post['attribute_text.' . $language['language_id']][$key]
                             ];
                         }
 
