@@ -513,6 +513,7 @@ $(document).ready(function () {
 
           $("select.select2-option").on('select2:select', function (e) {
             var data = e.params.data;
+
             let product_option_id = (Date.now() / 1000 | 0).toString() + Math.ceil(Math.random() * (9999 - 1000) + 1000);
 
             $('select.select2-option').val('').trigger('change.select2');
@@ -534,6 +535,9 @@ $(document).ready(function () {
               $(element).find("option:first").prop("selected", true);
               $(element).attr("name", $(element).attr("name")+product_option_id);
             });
+
+            $(clone).find('form').append("<input type='hidden' name='option_type."+product_option_id+"' value='"+data.id+"' />");
+            $(clone).find('form').append("<input type='hidden' name='option_type_text."+product_option_id+"' value='"+$(data.element).data("type")+"' />");
 
             $(clone).removeClass("etalon").addClass("active").attr("id", "option"+product_option_id).removeAttr("data-type").css("display", "");
 
@@ -572,7 +576,7 @@ $(document).ready(function () {
 
   $("#editDataSave").on("click", function() {
     let elements = {};
-    $("#editData").find("select, input, textarea").each(function(idx, element) {
+    $("#editData #editDataContent>div:not(.etalon)").find("select, input, textarea").each(function(idx, element) {
       if ($(element).attr("name") != undefined) {
         if ($(element).is("input[type='text']") || $(element).is("input[type='hidden']") || $(element).is("textarea")) {
           let value =  $(element).data("toggle") == "summernote" ? $(element).summernote("code") : $(element).val();

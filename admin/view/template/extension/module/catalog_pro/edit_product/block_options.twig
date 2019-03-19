@@ -33,6 +33,9 @@
                     {% if o['option_id'] == option.option_id %}
                         <div class="tab-pane {% if first_item == false %} active {% endif %}" id="option{{ product_option_id }}">
                             <form>
+                                <input type='hidden' name='option_type.{{ product_option_id }}' value='{{  o['option_id'] }}' />
+                                <input type='hidden' name='option_type_text.{{ product_option_id }}' value='{{  o['type'] }}' />
+
                                 <div class="form-group required">
                                     <label for="option-required-{{ product_option_id }}">{{ modal.fields.required }}</label>
                                     <select class="form-control input-sm" name="required.{{ product_option_id }}" id="option-required-{{ product_option_id }}">
@@ -126,7 +129,7 @@
         <form>
             <div class="form-group required">
                 <label for="option-required">{{ modal.fields.required }}</label>
-                <select class="form-control input-sm" name="required">
+                <select class="form-control input-sm" name="required.">
                     <option value="0" selected>{{ modal.text.no }}</option>
                     <option value="1">{{ modal.text.yes }}</option>
                 </select>

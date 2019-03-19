@@ -1153,7 +1153,7 @@ class ControllerExtensionModuleCatalogProProduct extends Controller {
         $id = $this->request->post['id'];
         $languages = $this->model_localisation_language->getLanguages(array());
 
-        if (!in_array($action, array('main', 'data', 'link', 'attrs'))) {
+        if (!in_array($action, array('main', 'data', 'link', 'attrs', 'options'))) {
             $this->returnError($eValidation['title'], $eValidation['action']);
             return;
         }
@@ -1658,6 +1658,23 @@ class ControllerExtensionModuleCatalogProProduct extends Controller {
                 }
 
                 $this->model_extension_catalog_pro_product->saveProductAttributes($id, $attrs);
+
+                break;
+
+            case 'options':
+                $regular = '/(\w+)(\.(\w+))?(\.(\w+))?\.(\d+)/m';
+                $options = array();
+                foreach ($post as $field => $value) {
+                    preg_match_all($regular, $field, $matches, PREG_SET_ORDER, 0);
+                    $m = $matches[0];
+
+                    if ($m[3] != "")
+                        $options[$m[6]][$m[1]][$m[5]][$m[3]] = in_array($m[3], array("quantity", "price", "points", "weight")) !== false? $value + 0: $value;
+                    else
+                        $options[$m[6]][$m[1]] = $value;
+                }
+
+                $this->model_extension_catalog_pro_product->saveProductOptions($id, $options);
 
                 break;
 

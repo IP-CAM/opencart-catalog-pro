@@ -70,6 +70,7 @@ class ModelExtensionCatalogProProduct extends Model {
         }, $this->getProductRelated(array($product_id)));
 
         $row['attributes'] = $this->getProductAttributes(array($product_id));
+        $row['options'] = $this->getProductOptions(array($product_id));
 
         return $row;
     }
@@ -315,6 +316,37 @@ class ModelExtensionCatalogProProduct extends Model {
         return $attributes;
     }
 
+    public function getProductOptions($ids) {
+        $options = array();
+
+        $query = $this->db->query("SELECT
+                                        ov.*,
+                                        o.product_option_id,
+                                        o.option_id,
+                                        o.value,
+                                        o.required,
+                                        op.type
+                                   FROM " . DB_PREFIX . "product_option o
+                                   LEFT JOIN " . DB_PREFIX . "product_option_value ov on (o.product_option_id = ov.product_option_id)
+                                   RIGHT JOIN " . DB_PREFIX . "option op on (op.option_id = o.option_id)
+                                   WHERE o.product_id in (".implode(", ", $ids).")");
+
+        foreach ($query->rows as $row) {
+            if (!isset($options[$row['product_option_id']]))
+                $options[$row['product_option_id']] = array (
+                    'option_id' => $row['option_id'],
+                    'type' => $row['type'],
+                    'value' => $row['value'],
+                    'required' => $row['required'],
+                );
+
+            $options[$row['product_option_id']]['children'][] = $row;
+        }
+
+        return $options;
+    }
+
+
     public function saveProductDescriptions($product_id, $language_id, $values) {
         $sql = array();
         foreach ($values as $field => $value) {
@@ -434,6 +466,43 @@ class ModelExtensionCatalogProProduct extends Model {
         if ($attributes !== array())
             foreach ($attributes as $a) {
                 $this->db->query("INSERT INTO " . DB_PREFIX . "product_attribute SET product_id = '" . (int)$product_id . "', attribute_id = '" . $a['attribute_id'] . "', language_id = '" . $a['language_id'] . "', text = '".$this->db->escape($a['text'])."';");
+            }
+
+        $this->db->query("UPDATE " . DB_PREFIX . "product SET date_modified = NOW() WHERE product_id = '" . (int)$product_id . "'");
+        return;
+    }
+
+    public function saveProductOptions($product_id, $options) {
+
+        $this->db->query("DELETE FROM " . DB_PREFIX . "product_option WHERE product_id = '" . (int)$product_id . "'");
+        $this->db->query("DELETE FROM " . DB_PREFIX . "product_option_value WHERE product_id = '" . (int)$product_id . "'");
+print_r($options);
+        if ($options !== array())
+            foreach ($options as $o) {
+
+                $this->db->query("INSERT INTO " . DB_PREFIX . "product_option SET product_id = '" . (int)$product_id . "', option_id = '" . $o['option_type'] . "', value = '" . (isset($o['value'])? $this->db->escape($o['value']): "") . "', required = '".$o['required']."';");
+
+                if (isset($o['values']) && $o['values'] !== array()) {
+                    $insertId = $this->db->getLastId();
+
+                    foreach($o['values'] as $row) {
+                        $this->db->query("INSERT INTO " . DB_PREFIX . "product_option_value SET
+                                                product_option_id = '" . $insertId . "',  
+                                                product_id = '" . (int)$product_id . "', 
+                                                option_id = '" . $o['option_type'] . "', 
+                                                option_value_id = '" . $row['option'] . "', 
+                                                quantity = '".$row['quantity']."',
+                                                subtract = '".$row['substract']."',
+                                                price = '".$row['price']."',
+                                                price_prefix = '".$row['price_prefix']."',
+                                                points = '".$row['points']."',
+                                                points_prefix = '".$row['points_prefix']."',
+                                                weight = '".$row['weight']."',
+                                                weight_prefix = '".$row['weight_prefix']."';
+                        ");
+                    }
+                }
+
             }
 
         $this->db->query("UPDATE " . DB_PREFIX . "product SET date_modified = NOW() WHERE product_id = '" . (int)$product_id . "'");
