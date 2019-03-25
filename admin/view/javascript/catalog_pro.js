@@ -356,7 +356,7 @@ $(document).ready(function () {
   });
 
   $("body").on("click", ".special-add", function() {
-    let clone = $(".webui-popover-content #specials tbody tr:last").clone(true);
+    let clone = $(".webui-popover-content ul#specials li:last").clone(true);
 
     const regex = /(\w+)\.(\d+)\.(\w+)/gm;
     let time = (Date.now() / 1000 | 0).toString() + Math.ceil(Math.random() * (9999 - 1000) + 1000);
@@ -370,7 +370,7 @@ $(document).ready(function () {
       $(element).attr("name", getTempName(time, $(element).attr("name")));
     });
 
-    $(".webui-popover-content #specials tbody tr:last").after($(clone).get(0));
+    $(".webui-popover-content ul#specials li:last").after($(clone).get(0));
     return false;
   });
 
@@ -539,7 +539,7 @@ $(document).ready(function () {
             $(clone).find('form').append("<input type='hidden' name='option_type."+product_option_id+"' value='"+data.id+"' />");
             $(clone).find('form').append("<input type='hidden' name='option_type_text."+product_option_id+"' value='"+$(data.element).data("type")+"' />");
 
-            $(clone).removeClass("etalon").addClass("active").attr("id", "option"+product_option_id).removeAttr("data-type").css("display", "");
+            $(clone).removeClass("etalon").addClass("active").attr("id", "option"+product_option_id).removeAttr("data-type").css("display", "").attr("data-id", product_option_id);
 
             $(".options-list-content").append($(clone).get(0));
 
@@ -673,23 +673,29 @@ $(document).ready(function () {
   });
 
   $("body").on("click", ".option-value-add", function() {
-    console.log(11);
-    let time = (Date.now() / 1000 | 0).toString() + Math.ceil(Math.random() * (9999 - 1000) + 1000);
+//    let time = (Date.now() / 1000 | 0).toString() + Math.ceil(Math.random() * (9999 - 1000) + 1000);
+    let time = $(this).parents(".tab-pane").attr("data-id");
 
     let clone = $(".options-list-content .tab-pane.active table tbody tr:last").clone(true);
 
     $(clone).find('span.select2').remove();
     $(clone).find('select.select2').removeClass("select2-hidden-accessible").removeAttr("data-select2-id").find("option").removeAttr("data-select2-id");
 
+    let indexElement = (Date.now() / 1000 | 0).toString() + Math.ceil(Math.random() * (9999 - 1000) + 1000);
+
     $(clone).find("input").each(function(idx, element) {
       let name = $(element).attr("name").substr(0, $(element).attr("name").lastIndexOf("."));
+      name = name.substr(0, name.lastIndexOf("."));
+
       $(element).val("");
-      $(element).attr("name", name+"."+time);
+      $(element).attr("name", name+"."+indexElement+"."+time);
     });
     $(clone).find("select").each(function(idx, element) {
       let name = $(element).attr("name").substr(0, $(element).attr("name").lastIndexOf("."));
+      name = name.substr(0, name.lastIndexOf("."));
+
       $(element).find("option:first").prop("selected", true);
-      $(element).attr("name", name+"."+time);
+      $(element).attr("name", name+"."+indexElement+"."+time);
     });
 
     $(".options-list-content .tab-pane.active table tbody").append($(clone).get(0));

@@ -1,0 +1,83 @@
+<div class="block-data tab-content discount-list-content">
+    <li class="special">
+        <div class="row">
+            <div class="col-xs-4">
+                {{ modal.fields.discount_group }}
+            </div>
+            <div class="col-xs-2">
+                {{ modal.fields.discount_quantity }}
+            </div>
+            <div class="col-xs-2">
+                {{ modal.fields.discount_price }}
+            </div>
+            <div class="col-xs-2">
+                {{ modal.fields.discount_date_start }}
+            </div>
+            <div class="col-xs-2">
+                {{ modal.fields.discount_date_end }}
+            </div>
+
+        </div>
+    </li>
+
+    <li class="special">
+        <div class="row">
+            <div class="col-xs-4">
+                <i class="fa fa-arrows sortable pull-left" aria-hidden="true"></i>
+                <select name="discount.group" class="form-control input-sm">
+                    {% for group in groups %}
+                        <option value="{{ group['customer_group_id'] }}" >{{ group.name }}</option>
+                    {% endfor %}
+                </select>
+
+            </div>
+            <div class="col-xs-2">
+                <input type="text" class="form-control input-sm" name="discount.quantity" value="" />
+            </div>
+            <div class="col-xs-2">
+                <input type="text" class="form-control input-sm" name="discount.price" value="" />
+            </div>
+
+            <div class="col-xs-2">
+                <div class="input-group date">
+                    <input type="text" name="discount.date_start" data-date-format="YYYY-MM-DD" class="form-control input-sm" value="" />
+                    <span class="input-group-btn">
+                        <button class="btn btn-default btn-sm" type="button"><i class="fa fa-calendar"></i></button>
+                    </span>
+                </div>
+            </div>
+            <div class="col-xs-2">
+                <div class="input-group date">
+                    <input type="text" name="discount.date_end" data-date-format="YYYY-MM-DD" class="form-control input-sm" value="" />
+                    <span class="input-group-btn">
+                        <button class="btn btn-default btn-sm" type="button"><i class="fa fa-calendar"></i></button>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </li>
+
+    <div class="pull-right">
+        
+    </div>
+
+</div>
+
+
+<style>
+    .discount-list-content li {
+        list-style-type: none;
+        margin-bottom: 5px;
+    }
+
+    .discount-list-content li .sortable {
+        position: absolute;
+        left: 15px;
+        top: 6px;
+    }
+
+    .discount-list-content li.special select {
+        width: calc(100% - 25px);
+        float: right;
+    }
+</style>

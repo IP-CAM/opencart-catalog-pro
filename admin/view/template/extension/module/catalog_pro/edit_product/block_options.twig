@@ -31,7 +31,7 @@
             {% for option in options %}
                 {% for product_option_id,o in item.options %}
                     {% if o['option_id'] == option.option_id %}
-                        <div class="tab-pane {% if first_item == false %} active {% endif %}" id="option{{ product_option_id }}">
+                        <div class="tab-pane {% if first_item == false %} active {% endif %}" id="option{{ product_option_id }}" data-id="{{ product_option_id }}">
                             <form>
                                 <input type='hidden' name='option_type.{{ product_option_id }}' value='{{  o['option_id'] }}' />
                                 <input type='hidden' name='option_type_text.{{ product_option_id }}' value='{{  o['type'] }}' />

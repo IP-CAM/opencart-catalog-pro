@@ -95,6 +95,12 @@ $_['modal']        = array (
         'option_weight' => 'Weight',
         'option_add' => 'Add option',
 
+        'discount_group' => 'Customer Group',
+        'discount_quantity' => 'Quantity',
+        'discount_price' => 'Price',
+        'discount_date_start' => 'Date Start',
+        'discount_date_end' => 'Date End',
+
     ),
     'notes' => array (
         'tags' => 'To add a tag, enter its data and press Enter',

@@ -95,6 +95,13 @@ $_['modal']        = array (
         'option_weight' => 'Вес',
         'option_add' => 'Добавить',
 
+
+        'discount_group' => 'Группа покупателей',
+        'discount_quantity' => 'Количество',
+        'discount_price' => 'Цена',
+        'discount_date_start' => 'Дата начала',
+        'discount_date_end' => 'Дата окончания',
+
     ),
     'notes' => array (
         'tags' => 'Чтобы добавить тег, введите его данные и нажмите Enter',

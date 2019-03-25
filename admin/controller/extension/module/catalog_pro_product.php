@@ -543,7 +543,7 @@ class ControllerExtensionModuleCatalogProProduct extends Controller {
                     return;
                 }
 
-
+                $this->model_extension_catalog_pro_product->saveProduct($post['id'], array("price" => $post['price']));
                 $this->model_extension_catalog_pro_product->saveProductSpecial($post['id'],  $specials);
 
                 break;
@@ -944,8 +944,12 @@ class ControllerExtensionModuleCatalogProProduct extends Controller {
                 $content = $this->editDataAttrs($eModal, $item);
                 break;
             case 'options':
-                $title = $eModal['title']['attrs'];
+                $title = $eModal['title']['options'];
                 $content = $this->editDataOptions($eModal, $item);
+                break;
+            case 'discount':
+                $title = $eModal['title']['discount'];
+                $content = $this->editDataDiscount($eModal, $item);
                 break;
             default:
                 $eValidation = $this->language->get('validate');
@@ -1134,6 +1138,24 @@ class ControllerExtensionModuleCatalogProProduct extends Controller {
                 "options" => $options,
                 "optionAdd" => $optionAdd,
                 "languages" => $languages,
+                "edit" => $eEdit,
+            )
+        );
+    }
+
+    private function editDataDiscount($eModal, $item) {
+        $this->load->language('customer/customer_group');
+        $this->load->model('customer/customer_group');
+        $groups = $this->model_customer_customer_group->getCustomerGroups();
+
+        $eEdit = $this->language->get('edit');
+
+        return $this->load->view(
+            'extension/module/catalog_pro/edit_product/block_discount',
+            array(
+                "item" => $item,
+                "modal" => $eModal,
+                "groups" => $groups,
                 "edit" => $eEdit,
             )
         );
