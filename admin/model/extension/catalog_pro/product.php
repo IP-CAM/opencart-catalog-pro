@@ -71,6 +71,7 @@ class ModelExtensionCatalogProProduct extends Model {
 
         $row['attributes'] = $this->getProductAttributes(array($product_id));
         $row['options'] = $this->getProductOptions(array($product_id));
+        $row['discount'] = $this->getProductDiscount(array($product_id));
 
         return $row;
     }
@@ -227,6 +228,22 @@ class ModelExtensionCatalogProProduct extends Model {
             return array();
 
         $query = $this->db->query("SELECT * FROM " . DB_PREFIX . "product_special WHERE product_id in (".implode(",", $ids).") ORDER BY priority, price");
+
+        return $query->rows;
+    }
+
+    public function getProductDiscount($ids) {
+        if ($ids === array())
+            return array();
+
+        $query = $this->db->query("SELECT * FROM " . DB_PREFIX . "product_discount WHERE product_id in (".implode(",", $ids).") ORDER BY priority, price");
+
+        foreach ($query->rows as &$row) {
+            if ($row['date_start'] == "0000-00-00")
+                $row['date_start'] = null;
+            if ($row['date_end'] == "0000-00-00")
+                $row['date_end'] = null;
+        }
 
         return $query->rows;
     }
@@ -503,6 +520,28 @@ class ModelExtensionCatalogProProduct extends Model {
                     }
                 }
 
+            }
+
+        $this->db->query("UPDATE " . DB_PREFIX . "product SET date_modified = NOW() WHERE product_id = '" . (int)$product_id . "'");
+        return;
+    }
+
+
+    public function saveProductDiscount($product_id, $discount) {
+
+        $this->db->query("DELETE FROM " . DB_PREFIX . "product_discount WHERE product_id = '" . (int)$product_id . "'");
+
+        $position = 0;
+        if ($discount !== array())
+            foreach ($discount as $d) {
+                $this->db->query("INSERT INTO " . DB_PREFIX . "product_discount SET product_id = '" . (int)$product_id . "', 
+                                        customer_group_id = '" . $d['customer_group_id'] . "', 
+                                        quantity = '" . $d['quantity'] . "',
+                                        priority = '" . $position++ . "',
+                                        price = '" . $d['price'] . "',
+                                        date_start = '" . ($d['date_start'] != ""? $d['date_start']: "0000-00-00") . "',
+                                        date_end = '" . ($d['date_end'] != ""? $d['date_end']: "0000-00-00") . "'
+                                        ");
             }
 
         $this->db->query("UPDATE " . DB_PREFIX . "product SET date_modified = NOW() WHERE product_id = '" . (int)$product_id . "'");

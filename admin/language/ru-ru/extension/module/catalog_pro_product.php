@@ -101,6 +101,7 @@ $_['modal']        = array (
         'discount_price' => 'Цена',
         'discount_date_start' => 'Дата начала',
         'discount_date_end' => 'Дата окончания',
+        'discount_add' => 'Добавить скидку',
 
     ),
     'notes' => array (
@@ -275,4 +276,5 @@ $_['validate']              = array (
     'language_id.in' => 'Значение поля "Язык" заполнено некорректно',
     'attribute_text.required' => 'Значение поля "Атрибут" заполнено некорректно',
 
+    'customer_group_id.in' => 'Значение поля "Группа" заполнено некорректно',
 );

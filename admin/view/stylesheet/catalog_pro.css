@@ -95,6 +95,7 @@ div.ruler div.cursor {height:20px; width:30px; background-color:#3C6E31; color:w
 
 #specials {
     padding: 15px;
+    padding-top: 0px;
 }
 
 #specials li {
@@ -117,6 +118,11 @@ div.ruler div.cursor {height:20px; width:30px; background-color:#3C6E31; color:w
     width: 90%;
     float: right;
 }
+
+#specials li div.col-xs-3:last-child div {
+    width: calc(100% - 40px);
+}
+
 
 .sortable-ghost {
     opacity: 0.4;

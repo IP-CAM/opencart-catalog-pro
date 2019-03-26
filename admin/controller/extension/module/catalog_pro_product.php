@@ -755,12 +755,17 @@ class ControllerExtensionModuleCatalogProProduct extends Controller {
                         </div>
                      </div>
                      <div class="col-xs-3">
+                        <button type="button" class="btn btn-sm btn-danger special-remove pull-right"><i class="fa fa-trash-o" aria-hidden="true"></i></button>
+
                         <div class="input-group date">
                             <input type="text" name="special.'.$special['product_special_id'].'.date_end" data-date-format="YYYY-MM-DD" class="form-control input-sm" value="'.($special['date_end'] != "0000-00-00"? $special['date_end']: "").'" />
                             <span class="input-group-btn">
-                            <button class="btn btn-default btn-sm" type="button"><i class="fa fa-calendar"></i></button>
+                                <button class="btn btn-default btn-sm" type="button"><i class="fa fa-calendar"></i></button>
+                                
                             </span>
                         </div>
+                        
+                        
                      </div>
                 </div>
             </div>';
@@ -781,7 +786,9 @@ class ControllerExtensionModuleCatalogProProduct extends Controller {
         $content .= '<div class="pull-right"><button type="button" class="btn btn-xs btn-success special-add">'.$eLang['price']['special_add'].'</button></div>';
         $content .= '<label>'.$eLang['price']['specials'].'</label>';
 
+        $content .= '<div class="row" style="margin-top: 20px"><div class="col-xs-4"><b>'.$eLang['price']['table']['group'].'</b></div><div class="col-xs-2"><b>'.$eLang['price']['table']['price'].'</b></div><div class="col-xs-3"><b>'.$eLang['price']['table']['date_from'].'</b></div><div class="col-xs-3"><b>'.$eLang['price']['table']['date_to'].'</b></div></div>';
         $content .= '<ul id="specials">';
+
         if ($item['specials'] !== array()) {
             foreach ($item['specials'] as $special) {
                 $content .= $this->editPriceAddSpecial($customers, $special);
@@ -1175,7 +1182,7 @@ class ControllerExtensionModuleCatalogProProduct extends Controller {
         $id = $this->request->post['id'];
         $languages = $this->model_localisation_language->getLanguages(array());
 
-        if (!in_array($action, array('main', 'data', 'link', 'attrs', 'options'))) {
+        if (!in_array($action, array('main', 'data', 'link', 'attrs', 'options', 'discount'))) {
             $this->returnError($eValidation['title'], $eValidation['action']);
             return;
         }
@@ -1697,6 +1704,82 @@ class ControllerExtensionModuleCatalogProProduct extends Controller {
                 }
 
                 $this->model_extension_catalog_pro_product->saveProductOptions($id, $options);
+
+                break;
+
+            case 'discount':
+                $this->load->model('customer/customer_group');
+                $this->load->model('extension/catalog_pro/category');
+
+                $errors = array();
+                $dict = array ();
+
+                $groups = array_map(function($group) {
+                    return $group['customer_group_id'];
+                }, $this->model_customer_customer_group->getCustomerGroups(array()));
+
+
+                $regular = '/(\w+)\.(\d+)/m';
+                $postData = array();
+
+                foreach ($post as $field => $value) {
+                    preg_match_all($regular, $field, $matches, PREG_SET_ORDER, 0);
+                    $m = $matches[0];
+                    $postData[$m[2]][$m[1]] = $value;
+                }
+
+                $constraint = new Assert\Collection(
+                    array(
+                        "customer_group_id" => array (
+                            new Assert\Choice(array(
+                                'choices' => $groups,
+                                'message' => $eValidation['customer_group_id.in']
+                            )),
+                        ),
+                        "quantity" => array(
+                            new Range(array(
+                                'min' => 1,
+                                'minMessage' => $eValidation['quantity.min'],
+                                'invalidMessage' => $eValidation['quantity.invalid'],
+                            ))
+                        ),
+                        "price" => array(
+                            new Range(array(
+                                'min' => 0.01,
+                                'minMessage' => $eValidation['price.min'],
+                                'invalidMessage' => $eValidation['price.invalid'],
+                            ))
+                        ),
+                        "date_start" => array(
+                            new Date([
+                                'message' => $eValidation['date_start.invalid'],
+                            ]),
+                        ),
+                        "date_end" => array(
+                            new Date([
+                                'message' => $eValidation['date_start.invalid'],
+                            ]),
+                        ),
+                    )
+                );
+
+                $validator = Validation::createValidator();
+                foreach ($postData as $data) {
+                    $violations = $validator->validate($data, $constraint);
+
+                    if (0 !== count($violations)) {
+                        foreach ($violations as $violation) {
+                            $errors[] = $violation->getMessage();
+                        }
+                    }
+                }
+
+                if ($errors !== array()) {
+                    $this->returnError($eValidation['title'], $errors);
+                    return;
+                }
+
+                $this->model_extension_catalog_pro_product->saveProductDiscount($id, $postData);
 
                 break;
 

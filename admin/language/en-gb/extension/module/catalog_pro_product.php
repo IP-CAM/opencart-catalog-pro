@@ -100,7 +100,7 @@ $_['modal']        = array (
         'discount_price' => 'Price',
         'discount_date_start' => 'Date Start',
         'discount_date_end' => 'Date End',
-
+        'discount_add' => 'Add discount',
     ),
     'notes' => array (
         'tags' => 'To add a tag, enter its data and press Enter',
@@ -108,6 +108,7 @@ $_['modal']        = array (
         'stock_status_id' => 'The status is shown when the item is out of stock.',
         'option_add' => 'Select attribute...',
         'option_value_add' => 'Add option value',
+
 
     ),
     'text' => array (
@@ -273,5 +274,7 @@ $_['validate']              = array (
     'language_id.required' => 'The field "Language" is required',
     'language_id.in' => 'The value of the "Language" field is incorrect',
     'attribute_text.required' => 'The field "Attribute text" is required',
+
+    'customer_group_id.in' => 'The value of the "Customer group" field is incorrect',
 
 );
