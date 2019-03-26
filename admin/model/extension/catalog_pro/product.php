@@ -73,6 +73,7 @@ class ModelExtensionCatalogProProduct extends Model {
         $row['options'] = $this->getProductOptions(array($product_id));
         $row['discount'] = $this->getProductDiscount(array($product_id));
         $row['rewards'] = $this->getProductRewards(array($product_id));
+        $row['seo'] = $this->getProductSeoUrls($product_id);
 
         return $row;
     }
@@ -262,6 +263,19 @@ class ModelExtensionCatalogProProduct extends Model {
 
         return $return;
     }
+
+    public function getProductSeoUrls($product_id) {
+        $return = array();
+
+        $query = $this->db->query("SELECT * FROM " . DB_PREFIX . "seo_url WHERE query = 'product_id=" . (int)$product_id . "'");
+
+        foreach ($query->rows as $row) {
+            $return[$row['store_id']][$row['language_id']] = $row['keyword'];
+        }
+
+        return $return;
+    }
+
 
     public function getProductImages($ids) {
         if ($ids === array())
@@ -573,6 +587,25 @@ class ModelExtensionCatalogProProduct extends Model {
                 $this->db->query("INSERT INTO " . DB_PREFIX . "product_reward SET product_id = '" . (int)$product_id . "', 
                                         customer_group_id = '" . $r['customer_group_id'] . "', 
                                         points = '" . $r['points'] . "'
+                                        ");
+            }
+
+        $this->db->query("UPDATE " . DB_PREFIX . "product SET date_modified = NOW() WHERE product_id = '" . (int)$product_id . "'");
+        return;
+    }
+
+    public function saveProductSEO($product_id, $seo) {
+        $this->db->query("DELETE FROM " . DB_PREFIX . "seo_url WHERE query = 'product_id=" . (int)$product_id . "'");
+
+            foreach ($seo as $url) {
+                if ($url['keyword'] == "")
+                    continue;
+
+                $this->db->query("INSERT INTO " . DB_PREFIX . "seo_url SET 
+                                        store_id = '" . $url['store_id'] . "', 
+                                        language_id = '" . $url['language_id'] . "',
+                                        query = 'product_id=" . (int)$product_id . "',
+                                        keyword = '" . $url['keyword'] . "'
                                         ");
             }
 

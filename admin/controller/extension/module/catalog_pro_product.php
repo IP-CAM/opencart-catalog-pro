@@ -962,6 +962,10 @@ class ControllerExtensionModuleCatalogProProduct extends Controller {
                 $title = $eModal['title']['bonus'];
                 $content = $this->editDataBonus($eModal, $item);
                 break;
+            case 'seo':
+                $title = $eModal['title']['seo'];
+                $content = $this->editDataSEO($eModal, $item);
+                break;
             default:
                 $eValidation = $this->language->get('validate');
                 return $this->returnError($eValidation['title'], $eValidation['action']);
@@ -1190,6 +1194,40 @@ class ControllerExtensionModuleCatalogProProduct extends Controller {
         );
     }
 
+    private function editDataSEO($eModal, $item) {
+        $this->load->model('setting/store');
+        $this->load->model('localisation/language');
+
+        $languages = $this->model_localisation_language->getLanguages(array());
+
+        $stores = array(
+            array(
+                'store_id' => 0,
+                'name'     => $this->language->get('text_default')
+            )
+        );
+
+        foreach ($this->model_setting_store->getStores() as $store) {
+            $stores[] = array(
+                'store_id' => $store['store_id'],
+                'name'     => $store['name']
+            );
+        }
+
+        $eEdit = $this->language->get('edit');
+
+        return $this->load->view(
+            'extension/module/catalog_pro/edit_product/block_seo',
+            array(
+                "item" => $item,
+                "modal" => $eModal,
+                "stores" => $stores,
+                "languages" => $languages,
+                "edit" => $eEdit,
+            )
+        );
+    }
+
 
     public function saveData() {
         $this->loadLanguage();
@@ -1204,7 +1242,7 @@ class ControllerExtensionModuleCatalogProProduct extends Controller {
         $id = $this->request->post['id'];
         $languages = $this->model_localisation_language->getLanguages(array());
 
-        if (!in_array($action, array('main', 'data', 'link', 'attrs', 'options', 'discount', 'bonus'))) {
+        if (!in_array($action, array('main', 'data', 'link', 'attrs', 'options', 'discount', 'bonus', 'seo'))) {
             $this->returnError($eValidation['title'], $eValidation['action']);
             return;
         }
@@ -1883,6 +1921,88 @@ class ControllerExtensionModuleCatalogProProduct extends Controller {
 
                 $this->model_extension_catalog_pro_product->saveProduct($id, array("points" => $postData['points']));
                 $this->model_extension_catalog_pro_product->saveProductRewards($id, $postData['reward_points']);
+
+                break;
+
+
+            case 'seo':
+
+                $regular = '/(\w+)\.(\d+)\.(\d+)/m';
+                $postData = array();
+                $errors = array();
+
+                foreach ($post as $field => $value) {
+                    preg_match_all($regular, $field, $matches, PREG_SET_ORDER, 0);
+                    $m = $matches[0];
+                    $postData[] = array(
+                        "store_id" => $m[2],
+                        "language_id" => $m[3],
+                        "keyword" => $value
+                    );
+                }
+
+                $this->load->model('setting/store');
+                $this->load->model('localisation/language');
+                $this->load->model('design/seo_url');
+
+                $languages = array();
+                foreach ($this->model_localisation_language->getLanguages(array()) as $l)
+                    $languages[] = $l['language_id'];
+
+                $stores[] = 0;
+
+                foreach ($this->model_setting_store->getStores() as $store) {
+                    $stores[] = $store['store_id'];
+                }
+
+                $constraint = new Assert\Collection(
+                    array(
+                        "store_id" => array (
+                            new Assert\Choice(array(
+                                'choices' => $stores,
+                                'message' => $eValidation['stores.in']
+                            )),
+                        ),
+                        "language_id" => array (
+                            new Assert\Choice(array(
+                                'choices' => $languages,
+                                'message' => $eValidation['language_id.in']
+                            )),
+                        ),
+                        "keyword" => array (
+                            new Assert\Type(array('type' => 'string'))
+                        ),
+                    )
+                );
+
+                $validator = Validation::createValidator();
+
+                foreach ($postData as $data) {
+                    $violations = $validator->validate($data, $constraint);
+
+                    if (0 !== count($violations)) {
+                        foreach ($violations as $violation) {
+                            $errors[] = $violation->getMessage();
+                        }
+                    }
+
+                    $urls = $this->model_design_seo_url->getSeoUrlsByQuery($data['keyword']);
+                    if ($urls !== array()) {
+                        foreach ($urls as $url) {
+                            if ($url['query'] != "product_id=".$id)
+                                $errors[] = $this->language->get('validate')['url.unique'];
+                        }
+                    }
+                }
+
+
+                if ($errors !== array()) {
+                    $this->returnError($eValidation['title'], $errors);
+                    return;
+                }
+
+
+                $this->model_extension_catalog_pro_product->saveProductSEO($id, $postData);
 
                 break;
 

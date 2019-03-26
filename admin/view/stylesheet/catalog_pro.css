@@ -264,3 +264,7 @@ div.ruler div.cursor {height:20px; width:30px; background-color:#3C6E31; color:w
     padding-bottom: 3px;
 }
 
+
+.seo-data .form-group {
+    padding: 3px 0 3px 0;
+}

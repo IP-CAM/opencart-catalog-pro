@@ -81,6 +81,7 @@ $_['modal']        = array (
         'manufacturer' => 'Manufacturer',
         'category' => 'Categories',
         'filter' => 'Filters',
+        'store' => 'Store',
         'stores' => 'Stores',
         'downloads' => 'Downloads',
         'related' => 'Related Products',
@@ -284,4 +285,7 @@ $_['validate']              = array (
     'points.invalid' => 'The field "Points" must be a number',
     'points_reward.min' => 'The value of the field "Reward Points" must be at least {{limit}} characters',
     'points_reward.invalid' => 'The field "Reward Points" must be a number',
+
+    'url.required' => 'SEO URL is required',
+    'url.unique' => 'SEO URL already in use!',
 );
