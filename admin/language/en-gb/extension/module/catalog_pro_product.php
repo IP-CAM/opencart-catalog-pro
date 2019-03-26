@@ -29,7 +29,7 @@ $_['action_buttons']        = array (
     'attrs' => 'Attribute',
     'options' => 'Option',
     'discount' => 'Discount',
-    'bonus' => 'Special',
+    'bonus' => 'Reward Points',
     'seo' => 'SEO',
     'design' => 'Design',
 );
@@ -43,7 +43,7 @@ $_['modal']        = array (
         'attrs' => 'Attribute',
         'options' => 'Option',
         'discount' => 'Discount',
-        'bonus' => 'Special',
+        'bonus' => 'Reward Points',
         'seo' => 'SEO',
         'design' => 'Design',
     ),
@@ -101,6 +101,9 @@ $_['modal']        = array (
         'discount_date_start' => 'Date Start',
         'discount_date_end' => 'Date End',
         'discount_add' => 'Add discount',
+
+        'points' => 'Points',
+        'points_reward' => 'Reward Points',
     ),
     'notes' => array (
         'tags' => 'To add a tag, enter its data and press Enter',
@@ -108,7 +111,7 @@ $_['modal']        = array (
         'stock_status_id' => 'The status is shown when the item is out of stock.',
         'option_add' => 'Select attribute...',
         'option_value_add' => 'Add option value',
-
+        'points' => 'Number of points needed to buy this item. If you don\'t want this product to be purchased with points leave as 0.',
 
     ),
     'text' => array (
@@ -277,4 +280,8 @@ $_['validate']              = array (
 
     'customer_group_id.in' => 'The value of the "Customer group" field is incorrect',
 
+    'points.min' => 'The value of the field "Points" must be at least {{limit}} characters',
+    'points.invalid' => 'The field "Points" must be a number',
+    'points_reward.min' => 'The value of the field "Reward Points" must be at least {{limit}} characters',
+    'points_reward.invalid' => 'The field "Reward Points" must be a number',
 );

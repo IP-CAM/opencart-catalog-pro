@@ -958,6 +958,10 @@ class ControllerExtensionModuleCatalogProProduct extends Controller {
                 $title = $eModal['title']['discount'];
                 $content = $this->editDataDiscount($eModal, $item);
                 break;
+            case 'bonus':
+                $title = $eModal['title']['bonus'];
+                $content = $this->editDataBonus($eModal, $item);
+                break;
             default:
                 $eValidation = $this->language->get('validate');
                 return $this->returnError($eValidation['title'], $eValidation['action']);
@@ -1168,6 +1172,24 @@ class ControllerExtensionModuleCatalogProProduct extends Controller {
         );
     }
 
+    private function editDataBonus($eModal, $item) {
+        $this->load->language('customer/customer_group');
+        $this->load->model('customer/customer_group');
+        $groups = $this->model_customer_customer_group->getCustomerGroups();
+
+        $eEdit = $this->language->get('edit');
+
+        return $this->load->view(
+            'extension/module/catalog_pro/edit_product/block_rewards',
+            array(
+                "item" => $item,
+                "modal" => $eModal,
+                "groups" => $groups,
+                "edit" => $eEdit,
+            )
+        );
+    }
+
 
     public function saveData() {
         $this->loadLanguage();
@@ -1182,7 +1204,7 @@ class ControllerExtensionModuleCatalogProProduct extends Controller {
         $id = $this->request->post['id'];
         $languages = $this->model_localisation_language->getLanguages(array());
 
-        if (!in_array($action, array('main', 'data', 'link', 'attrs', 'options', 'discount'))) {
+        if (!in_array($action, array('main', 'data', 'link', 'attrs', 'options', 'discount', 'bonus'))) {
             $this->returnError($eValidation['title'], $eValidation['action']);
             return;
         }
@@ -1780,6 +1802,87 @@ class ControllerExtensionModuleCatalogProProduct extends Controller {
                 }
 
                 $this->model_extension_catalog_pro_product->saveProductDiscount($id, $postData);
+
+                break;
+
+            case 'bonus':
+                $this->load->model('customer/customer_group');
+                $this->load->model('extension/catalog_pro/category');
+
+                $errors = array();
+
+                $groups = array_map(function($group) {
+                    return $group['customer_group_id'];
+                }, $this->model_customer_customer_group->getCustomerGroups(array()));
+
+                $regular = '/(\w+)\.(\d+)/m';
+                $postData = array();
+
+                foreach ($post as $field => $value) {
+                    if (strpos($field, ".") !== false) {
+                        preg_match_all($regular, $field, $matches, PREG_SET_ORDER, 0);
+                        $m = $matches[0];
+                        $postData['reward_points'][] = array (
+                            "customer_group_id" => $m[2],
+                            "points" => $value,
+                        );
+                    }
+                    else
+                        $postData[$field] = $value;
+                }
+
+                $constraint = new Assert\Collection(
+                    array(
+                        "points" => array (
+                            new Range(array(
+                                'min' => 0,
+                                'minMessage' => $eValidation['points.min'],
+                                'invalidMessage' => $eValidation['points.invalid'],
+                            ))
+                        ),
+                        "reward_points" => array (
+                            new Assert\Type('array'),
+                            new Assert\All(
+                                array(
+                                    new Assert\Collection(
+                                        array(
+                                            "customer_group_id" => array (
+                                                new Assert\Choice(array(
+                                                    'choices' => $groups,
+                                                    'message' => $eValidation['customer_group_id.in']
+                                                )),
+                                            ),
+                                            "points" => array (
+                                                new Range(array(
+                                                    'min' => 0,
+                                                    'minMessage' => $eValidation['points_reward.min'],
+                                                    'invalidMessage' => $eValidation['points_reward.invalid'],
+                                                ))
+                                            ),
+                                        )
+                                    )
+                                )
+                            ),
+                        ),
+                    )
+                );
+
+                $validator = Validation::createValidator();
+                $violations = $validator->validate($postData, $constraint);
+
+                if (0 !== count($violations)) {
+                    foreach ($violations as $violation) {
+                        $errors[] = $violation->getMessage();
+                    }
+                }
+
+                if ($errors !== array()) {
+                    $this->returnError($eValidation['title'], $errors);
+                    return;
+                }
+
+                $this->model_extension_catalog_pro_product->saveProduct($id, array("points" => $postData['points']));
+                $this->model_extension_catalog_pro_product->saveProductRewards($id, $postData['reward_points']);
 
                 break;
 

@@ -72,6 +72,7 @@ class ModelExtensionCatalogProProduct extends Model {
         $row['attributes'] = $this->getProductAttributes(array($product_id));
         $row['options'] = $this->getProductOptions(array($product_id));
         $row['discount'] = $this->getProductDiscount(array($product_id));
+        $row['rewards'] = $this->getProductRewards(array($product_id));
 
         return $row;
     }
@@ -246,6 +247,20 @@ class ModelExtensionCatalogProProduct extends Model {
         }
 
         return $query->rows;
+    }
+
+    public function getProductRewards($ids) {
+        if ($ids === array())
+            return array();
+
+        $query = $this->db->query("SELECT * FROM " . DB_PREFIX . "product_reward WHERE product_id in (".implode(",", $ids).")");
+
+        $return = array();
+
+        foreach($query->rows as $row)
+            $return[$row['customer_group_id']] = $row['points'];
+
+        return $return;
     }
 
     public function getProductImages($ids) {
@@ -541,6 +556,23 @@ class ModelExtensionCatalogProProduct extends Model {
                                         price = '" . $d['price'] . "',
                                         date_start = '" . ($d['date_start'] != ""? $d['date_start']: "0000-00-00") . "',
                                         date_end = '" . ($d['date_end'] != ""? $d['date_end']: "0000-00-00") . "'
+                                        ");
+            }
+
+        $this->db->query("UPDATE " . DB_PREFIX . "product SET date_modified = NOW() WHERE product_id = '" . (int)$product_id . "'");
+        return;
+    }
+
+    public function saveProductRewards($product_id, $rewards) {
+
+        $this->db->query("DELETE FROM " . DB_PREFIX . "product_reward WHERE product_id = '" . (int)$product_id . "'");
+
+        $position = 0;
+        if ($rewards !== array())
+            foreach ($rewards as $r) {
+                $this->db->query("INSERT INTO " . DB_PREFIX . "product_reward SET product_id = '" . (int)$product_id . "', 
+                                        customer_group_id = '" . $r['customer_group_id'] . "', 
+                                        points = '" . $r['points'] . "'
                                         ");
             }
 
